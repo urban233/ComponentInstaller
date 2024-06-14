@@ -3,13 +3,11 @@ package org.ibci.componentinstaller.gui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -93,6 +91,8 @@ class MainWindow() {
     @Composable
     fun ComponentItem(name: String, aController: MainWindowController, version: String? = null, updateAvailable: Boolean = false) {
         if (name != "") {
+            var expanded by remember { mutableStateOf(false) }
+            var dialogVisible by remember { mutableStateOf(false) }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -118,6 +118,53 @@ class MainWindow() {
                     }) {
                         Text("Install")
                     }
+                }
+                Box {
+                    IconButton(onClick = {
+                        expanded = !expanded
+                    }) {
+                        Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More Options")
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        DropdownMenuItem(onClick = { dialogVisible = true }) {
+                            Text("Uninstall")
+                        }
+                        DropdownMenuItem(onClick = { /* Handle menu item click */ }) {
+                            Text("Option 2")
+                        }
+                        // Add more DropdownMenuItems as needed
+                    }
+                }
+                // Dialog that appears when dialogVisible is true
+                if (dialogVisible) {
+                    AlertDialog(
+                        onDismissRequest = { dialogVisible = false },
+                        title = {
+                            Text("Confirm Uninstall")
+                        },
+                        text = {
+                            Text("Are you sure you want to uninstall?")
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    dialogVisible = false
+                                }
+                            ) {
+                                Text("Uninstall")
+                            }
+                            Button(
+                                onClick = {
+                                    dialogVisible = false
+                                }
+                            ) {
+                                Text("Cancel")
+                            }
+                        }
+                    )
                 }
             }
         }
