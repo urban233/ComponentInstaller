@@ -27,9 +27,10 @@ compose.desktop {
         mainClass = "org.ibci.componentinstaller.main.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            //targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Exe)  // To build the actual exe file use the gradle task createDistributable!
             packageName = "ComponentInstaller"
-            packageVersion = "1.0.0"
+            packageVersion = "0.0.1"
         }
     }
 }

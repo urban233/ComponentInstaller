@@ -29,16 +29,14 @@ class PyssaComponent: IComponent {
         if (!File(PathDefinitions.PYSSA_PROGRAM_DIR).exists()) {
             File(PathDefinitions.PYSSA_PROGRAM_DIR).mkdirs()
         }
-
-        TODO("Continue... translate C# Io in Kotlin!")
+        return true
+        // TODO("Continue... translate C# Io in Kotlin!")
 //        // Download windows pyssa package
 //        if (!Io.downloadFile(UrlDefinitions.PYSSA_WINDOWS_PACKAGE_URL, "$PathDefinitions.PYSSA_PROGRAM_DIR/windows_package.zip")) {
 //            // Download failed therefore return with exit code 1
 //            // logger.error("The windows_package.zip could not be downloaded!")
 //            return false
 //        }
-
-        return true
     }
 
 
