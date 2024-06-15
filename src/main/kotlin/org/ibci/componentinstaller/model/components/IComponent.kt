@@ -5,6 +5,26 @@ package org.ibci.componentinstaller.model.components
  *
  */
 interface IComponent {
+    //<editor-fold desc="Class attributes">
+    /**
+     * The component name
+     *
+     */
+    val name: String
+
+    /**
+     * The local component version
+     *
+     */
+    val localVersion: KotlinVersion
+
+    /**
+     * The remote component version
+     *
+     */
+    val remoteVersion: KotlinVersion
+    //</editor-fold>
+
     /**
      * Install a component
      *

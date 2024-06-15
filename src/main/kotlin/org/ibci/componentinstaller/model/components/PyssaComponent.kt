@@ -1,5 +1,6 @@
 package org.ibci.componentinstaller.model.components
 
+import org.ibci.componentinstaller.model.util.ComponentDefinitions
 import org.ibci.componentinstaller.model.util.PathDefinitions
 import org.ibci.componentinstaller.model.util.UrlDefinitions
 import java.io.File
@@ -9,6 +10,31 @@ import java.io.File
  *
  */
 class PyssaComponent: IComponent {
+    //<editor-fold desc="Class attributes">
+    /**
+     * The component name
+     *
+     */
+    override val name: String
+        get() = ComponentDefinitions.COMPONENT_NAME_PYSSA
+
+    /**
+     * The local component version
+     * IMPORTANT: If version could not be found, the major is -1!!!
+     *
+     */
+    override val localVersion: KotlinVersion
+        get() = KotlinVersion(-1, 0, 0)
+
+    /**
+     * The remote component version
+     * IMPORTANT: If remote version is unavailable, the major is -1!!!
+     *
+     */
+    override val remoteVersion: KotlinVersion
+        get() = KotlinVersion(-1, 0, 0)
+    //</editor-fold>
+
     /**
      * Install a component
      *
