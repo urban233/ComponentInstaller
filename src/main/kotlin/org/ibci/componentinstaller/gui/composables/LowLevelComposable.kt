@@ -1,9 +1,7 @@
 package org.ibci.componentinstaller.gui.composables
 
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -13,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,6 +58,21 @@ object LowLevelComposable {
             fontSize = 18.sp,
             color = Color.Black,
             fontWeight = FontWeight.SemiBold,
+        )
+    }
+
+    /**
+     * Describes the component logo
+     *
+     */
+    @Composable
+    fun componentLogo(aLogoResourcePath: String) {
+        Image(
+            painter = painterResource(aLogoResourcePath),
+            contentDescription = "Logo Image",
+            modifier = Modifier
+                .size(125.dp)
+                .padding(top = 12.dp)
         )
     }
 }

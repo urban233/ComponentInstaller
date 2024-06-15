@@ -88,14 +88,7 @@ class ComposableCollection {
                     .background(if (isHovered) GuiDefinitions.COMPONENT_HOVER_BACKGROUND_COLOR else GuiDefinitions.COMPONENT_BACKGROUND_COLOR, shape = MaterialTheme.shapes.medium)
                     .hoverable(interactionSource = interactionSource)
             ) {
-                // Image of the component
-                Image(
-                    painter = painterResource("component_logos/wsl_96_dpi.png"),
-                    contentDescription = "Logo Image",
-                    modifier = Modifier
-                        .size(125.dp)
-                        .padding(top = 12.dp)
-                )
+                LowLevelComposable.componentLogo("component_logos/wsl_96_dpi.png")
                 // Row container for the component information
                 Row(
                     modifier = Modifier
