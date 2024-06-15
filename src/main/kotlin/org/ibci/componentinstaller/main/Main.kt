@@ -1,33 +1,40 @@
 package org.ibci.componentinstaller.main
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
 
+import org.ibci.componentinstaller.gui.*
+
+/**
+ * ComponentInstaller GUI build function
+ *
+ */
 @Composable
 @Preview
 fun App() {
-    var text by remember { mutableStateOf("Hello, World!") }
-
+    val tmpMainWindow = MainWindow()
     MaterialTheme {
-        Button(onClick = {
-            text = "Hello, Desktop!"
-        }) {
-            Text(text)
-        }
+        tmpMainWindow.MainFrame()
     }
 }
 
+/**
+ * ComponentInstaller entry point
+ *
+ */
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication) {
+    val tmpWindowState = rememberWindowState(width = 650.dp, height = 750.dp)
+    Window(
+        title = "PySSA-Installer",
+        state = tmpWindowState,
+        icon = painterResource("pyssa_installer_logo.png"),
+        onCloseRequest = ::exitApplication) {
         App()
     }
 }
