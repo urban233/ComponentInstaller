@@ -3,6 +3,8 @@ package org.ibci.componentinstaller.gui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -25,34 +27,32 @@ class MainWindow {
      * Describes the outline of the main window
      */
     @Composable
-    fun MainFrame() {
+    fun MainFrame(aController: MainWindowController) {
         val tmpComposableCollection = ComposableCollection()
-        var installedExpanded by remember { mutableStateOf(true) }
-        var availableExpanded by remember { mutableStateOf(true) }
-        var installedComponents: SnapshotStateList<String> = remember { mutableStateListOf("WSL2", "", "") }
-        var availableComponents: SnapshotStateList<String> = remember { mutableStateListOf("ColabFold", "PySSA") }
-        val controller = remember { mutableStateOf(MainWindowController(installedComponents)) }
-
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        val scrollState = rememberScrollState()
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.verticalScroll(scrollState)
+            ) {
             tmpComposableCollection.MainWindowHeader()
 
             tmpComposableCollection.ExpandableSection(
                 title = "Installed",
-                expanded = installedExpanded,
-                onExpandChanged = { installedExpanded = it }
+                expanded = aController.states.installedExpanded,
+                onExpandChanged = { aController.states.installedExpanded = it }
             ) {
-                for (tmpInstalledComponent in installedComponents) {
-                    tmpComposableCollection.ComponentItem(name = tmpInstalledComponent, version = "2022.1.2", aController = controller.value)
+                for (tmpInstalledComponent in aController.states.installedComponents) {
+                    tmpComposableCollection.ComponentItem(name = tmpInstalledComponent, version = "2022.1.2", aController = aController)
                 }
             }
 
             tmpComposableCollection.ExpandableSection(
                 title = "Available",
-                expanded = availableExpanded,
-                onExpandChanged = { availableExpanded = it }
+                expanded = aController.states.availableExpanded,
+                onExpandChanged = { aController.states.availableExpanded = it }
             ) {
-                for (tmpAvailableComponent in availableComponents) {
-                    tmpComposableCollection.ComponentItem(name = tmpAvailableComponent, aController = controller.value)
+                for (tmpAvailableComponent in aController.states.availableComponents) {
+                    tmpComposableCollection.ComponentItem(name = tmpAvailableComponent, aController = aController)
                 }
             }
         }

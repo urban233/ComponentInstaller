@@ -19,4 +19,8 @@ object GuiDefinitions {
      * Color for the info icon
      */
     val COMPONENT_INFO_ICON_COLOR: Color = Color(0, 96, 192)
+    /**
+     * Color for uninstall text
+     */
+    val COMPONENT_UNINSTALL_COLOR: Color = Color(179, 54, 55)
 }

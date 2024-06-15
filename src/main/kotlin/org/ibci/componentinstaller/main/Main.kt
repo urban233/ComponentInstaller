@@ -10,17 +10,21 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 
 import org.ibci.componentinstaller.gui.*
+import org.ibci.componentinstaller.util.logger.FileLogger
+import org.ibci.componentinstaller.util.logger.LogLevel
+import java.util.logging.Level
 
 /**
  * ComponentInstaller GUI build function
  *
+ * @param aController Controller of the main window
  */
 @Composable
 @Preview
-fun App() {
+fun App(aController: MainWindowController) {
     val tmpMainWindow = MainWindow()
     MaterialTheme {
-        tmpMainWindow.MainFrame()
+        tmpMainWindow.MainFrame(aController)
     }
 }
 
@@ -29,12 +33,19 @@ fun App() {
  *
  */
 fun main() = application {
+    val fileLogger = FileLogger()
+    fileLogger.append(LogLevel.INFO, "Starting application ...")
+    fileLogger.append(LogLevel.DEBUG, "Test message.")
     val tmpWindowState = rememberWindowState(width = 650.dp, height = 750.dp)
     Window(
         title = "PySSA-Installer",
         state = tmpWindowState,
-        icon = painterResource("pyssa_installer_logo.png"),
-        onCloseRequest = ::exitApplication) {
-        App()
+        icon = painterResource("installer_24_dpi.png"),
+        onCloseRequest = ::exitApplication
+    ) {
+        val tmpStates = MainWindowStates()
+        val tmpController = MainWindowController(tmpStates)
+        App(tmpController)
     }
 }
+

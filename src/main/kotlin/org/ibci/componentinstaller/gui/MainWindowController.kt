@@ -1,18 +1,19 @@
 package org.ibci.componentinstaller.gui
 
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import org.ibci.componentinstaller.model.components.IComponent
+import kotlinx.coroutines.*
 
-class MainWindowController(anInstalledComponentsList: SnapshotStateList<String>) {
+class MainWindowController(theMainWindowStates: MainWindowStates) {
 
-    private var installedComponents: SnapshotStateList<String> = anInstalledComponentsList
-
+    var installedComponents: SnapshotStateList<String> = SnapshotStateList()
+    val states = theMainWindowStates
     /**
      * Installs a component
      *
      */
-    fun installComponent(aComponent: String) {
-        this.installedComponents.add(aComponent.uppercase())
+    suspend fun installComponent(aComponent: String) {
+        delay(2000)
+        this.states.installedComponents.add(aComponent.uppercase())
 
 //        // TODO: Add component object install method inside the if-statement
 //        if (aComponent.install()) {
