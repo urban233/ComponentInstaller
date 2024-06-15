@@ -10,6 +10,7 @@ import java.io.File
  *
  */
 class PyssaComponent: IComponent {
+    //<editor-fold desc="Class attributes">
     /**
      * The component name
      *
@@ -32,7 +33,7 @@ class PyssaComponent: IComponent {
      */
     override val remoteVersion: KotlinVersion
         get() = KotlinVersion(-1, 0, 0)
-
+    //</editor-fold>
 
     /**
      * Install a component
