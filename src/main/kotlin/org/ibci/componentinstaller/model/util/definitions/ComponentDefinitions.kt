@@ -1,4 +1,4 @@
-package org.ibci.componentinstaller.model.util
+package org.ibci.componentinstaller.model.util.definitions
 
 /**
  * Component definitions

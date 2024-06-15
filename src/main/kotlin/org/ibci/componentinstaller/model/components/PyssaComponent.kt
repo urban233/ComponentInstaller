@@ -1,9 +1,16 @@
 package org.ibci.componentinstaller.model.components
 
-import org.ibci.componentinstaller.model.util.ComponentDefinitions
-import org.ibci.componentinstaller.model.util.PathDefinitions
-import org.ibci.componentinstaller.model.util.UrlDefinitions
+import org.ibci.componentinstaller.model.util.Io
+import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
+import org.ibci.componentinstaller.model.util.definitions.PathDefinitions
+import org.ibci.componentinstaller.model.util.definitions.UrlDefinitions
+import org.ibci.componentinstaller.util.logger.FileLogger
+import org.ibci.componentinstaller.util.logger.LogLevel
+
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.zip.ZipFile
 
 /**
  * Class for PySSA component
@@ -33,6 +40,12 @@ class PyssaComponent: IComponent {
      */
     override val remoteVersion: KotlinVersion
         get() = KotlinVersion(-1, 0, 0)
+
+    /**
+     * The logger
+     *
+     */
+    val fileLogger = FileLogger()
     //</editor-fold>
 
     /**
@@ -41,7 +54,10 @@ class PyssaComponent: IComponent {
      * @return True if component is successfully installed, false: Otherwise
      */
     override fun install(): Boolean {
+        // TODO("Check if internet connection is available or not and select methods!")
         downloadWindowsPackage()
+        copyOfflineWindowsPackage()
+
         return true
     }
 
@@ -55,15 +71,157 @@ class PyssaComponent: IComponent {
         if (!File(PathDefinitions.PYSSA_PROGRAM_DIR).exists()) {
             File(PathDefinitions.PYSSA_PROGRAM_DIR).mkdirs()
         }
+        // Download windows pyssa package
+        if (!Io.downloadFile(UrlDefinitions.PYSSA_WINDOWS_PACKAGE, "$PathDefinitions.PYSSA_PROGRAM_DIR/windows_package.zip")) {
+            fileLogger.append(LogLevel.ERROR, "The windows_package.zip could not be downloaded!")
+            return false
+        }
         return true
-        // TODO("Continue... translate C# Io in Kotlin!")
-//        // Download windows pyssa package
-//        if (!Io.downloadFile(UrlDefinitions.PYSSA_WINDOWS_PACKAGE_URL, "$PathDefinitions.PYSSA_PROGRAM_DIR/windows_package.zip")) {
-//            // Download failed therefore return with exit code 1
-//            // logger.error("The windows_package.zip could not be downloaded!")
+    }
+
+    /**
+     * Copy the offline windows package for PySSA.
+     *
+     * @return True if operation is successful, otherwise: false
+     */
+    fun copyOfflineWindowsPackage(): Boolean {
+        try {
+            // Create program dir under ProgramData
+            val programDir = File(PathDefinitions.PYSSA_PROGRAM_DIR)
+            if (!programDir.exists()) {
+                programDir.mkdirs()
+            }
+
+            // Copy the windows pyssa package
+            val targetFile = File("${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip")
+            if (!targetFile.exists()) {
+                val sourceFile = File(PathDefinitions.INSTALLER_OFFLINE_WIN_PACKAGE_ZIP_FILEPATH)
+                sourceFile.copyTo(targetFile, overwrite = true)
+            }
+            return true
+        }
+        catch (ex: Exception) {
+            fileLogger.append(LogLevel.ERROR, "$ex")
+            return false
+        }
+    }
+
+    /**
+     * Installs PySSA
+     *
+     * @return True if operation is successful, otherwise: false
+     */
+    suspend fun installPyssa(): Boolean {
+        if (!File("${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip").exists()) {
+            fileLogger.append(LogLevel.ERROR, "The windows_package.zip could not be found.")
+        }
+        if (!unzipWindowsPackage()) {
+            return false
+        }
+        if (!createWindowsShortcuts()) {
+            return false
+        }
+//        if (!setupPythonEnvironment()) {
 //            return false
 //        }
+//        if (!postInstallCleanup()) {
+//            return false
+//        }
+        return true
     }
+
+    /**
+     * Unzips the windows_package.zip file to the specified directory
+     *
+     * @return True if operation is successful, otherwise: false
+     */
+    fun unzipWindowsPackage(): Boolean {
+        val zipFilePath = "${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip"
+        val extractPath = PathDefinitions.PYSSA_PROGRAM_DIR
+
+        // Ensure the zip archive exists
+        if (!File(zipFilePath).exists()) {
+            fileLogger.append(LogLevel.ERROR, "The windows_package.zip file is missing! Exit installation process now.")
+            return false
+        }
+
+        // Ensure the extract directory exists
+        if (!File(extractPath).exists()) {
+            File(extractPath).mkdirs()
+        }
+
+        // Unzip the archive
+        try {
+            ZipFile(zipFilePath).use { zip ->
+                zip.entries().asSequence().forEach { entry ->
+                    val outputFile = File(extractPath, entry.name)
+                    if (entry.isDirectory) {
+                        outputFile.mkdirs()
+                    }
+                    else {
+                        outputFile.outputStream().use { output ->
+                            zip.getInputStream(entry).use { input ->
+                                input.copyTo(output)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (ex: Exception) {
+            fileLogger.append(LogLevel.ERROR, "Extraction ended with error: ${ex.message}")
+            return false
+        }
+        try {
+            Files.delete(Paths.get(zipFilePath))
+        }
+        catch (ex: Exception) {
+            fileLogger.append(LogLevel.ERROR, "Removing the offline windows package ended with error: ${ex.message}")
+            return false
+        }
+            return true
+        }
+
+    /**
+     * Creates Windows shortcuts for the PyMOL-PySSA application
+     *
+     * @return True if operation is successful, otherwise: false
+     */
+    fun createWindowsShortcuts(): Boolean {
+        try {
+            // Specify the details for the shortcut to be created
+            val executablePath = PathDefinitions.PYSSA_WINDOW_ARRANGEMENT_EXE_FILEPATH
+            val shortcutName = "PySSA"
+            val iconPath = PathDefinitions.PYSSA_ICON_FILEPATH
+
+            TODO("Continue! New .kt for SystemEntryHandler")
+//            // Create desktop icon
+//            SystemEntryHandler.createDesktopShortcut(executablePath, shortcutName, iconPath)
+//            // Create start menu entry
+//            SystemEntryHandler.createStartMenuShortcut(executablePath, shortcutName, iconPath)
+            // return true
+        }
+        catch (ex: Exception) {
+            fileLogger.append(LogLevel.ERROR, "$ex")
+            return false
+        }
+    }
+
+    /**
+     * Configure the setup for python environment
+     *
+     * @return True if operation is successful, otherwise: false
+     */
+
+
+    /**
+     * Cleans files when the installation is complete
+     *
+     * @return True if operation is successful, otherwise: false
+     */
+
+
+
 
 
     /**
