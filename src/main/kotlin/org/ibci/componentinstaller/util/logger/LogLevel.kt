@@ -7,23 +7,8 @@ import java.util.logging.Level
  *
  * @param aName Name of the log level
  * @param aValue An integer value for the log level
- * @throws IllegalArgumentException Thrown if any argument is illegal
  */
 class LogLevel (aName: String, aValue: Int) : Level(aName, aValue) {
-    /**
-     * Initializer block for the class
-     *
-     * This block is needed to do the null checks.
-     */
-    init {
-        if (aName == null || aName == "") {
-            throw IllegalArgumentException("aName cannot be null or empty.")
-        }
-        if (aValue == null) {
-            throw IllegalArgumentException("aValue cannot be null.")
-        }
-    }
-
     /**
      * Defines all available log levels to use with the FileLogger
      *

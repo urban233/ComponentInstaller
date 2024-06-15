@@ -25,26 +25,6 @@ class MainWindowStates {
             _availableExpanded.value = aValue
         }
     /**
-     * State variable for controlling the is "More Options" dropdown menu expanded boolean
-     *
-     */
-    private val _moreOptionsExpanded by lazy { mutableStateOf(false) }
-    var moreOptionsExpanded: Boolean
-        get() = _moreOptionsExpanded.value
-        set(aValue) {
-            _moreOptionsExpanded.value = aValue
-        }
-    /**
-     * State variable for controlling the is "Update available" boolean
-     *
-     */
-    private val _updateAvailable by lazy { mutableStateOf(false) }
-    var updateAvailable: Boolean
-        get() = _updateAvailable.value
-        set(aValue) {
-            _updateAvailable.value = aValue
-        }
-    /**
      * State variable for controlling the is "Confirm uninstall dialog" visible boolean
      *
      */
