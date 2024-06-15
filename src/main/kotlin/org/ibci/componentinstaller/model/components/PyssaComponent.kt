@@ -1,5 +1,6 @@
 package org.ibci.componentinstaller.model.components
 
+import androidx.compose.runtime.mutableStateOf
 import org.ibci.componentinstaller.model.util.Io
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
 import org.ibci.componentinstaller.model.util.definitions.PathDefinitions
@@ -40,6 +41,48 @@ class PyssaComponent: IComponent {
      */
     override val remoteVersion: KotlinVersion
         get() = KotlinVersion(-1, 0, 0)
+
+    /**
+     * The installation state
+     */
+    override var _installed = mutableStateOf(false)
+
+    /**
+     * Returns the installation state
+     *
+     * @return True if the component is installed, false: Otherwise
+     */
+    override fun isInstalled() = _installed.value
+
+    /**
+     * Sets the new value for the installation state
+     *
+     * @param value value A boolean that indicated the state of the installation
+     */
+    override fun setInstalled(value: Boolean) {
+        _installed.value = value
+    }
+
+    /**
+     * The update state
+     */
+    override var _updatable = mutableStateOf(false)
+
+    /**
+     * Returns the update state
+     *
+     * @return True if component has update, false: Otherwise
+     */
+    override fun hasUpdate() = _updatable.value
+
+    /**
+     * Sets the new value for the update state of the component
+     *
+     * @param value A boolean that indicated the state of the installation
+     */
+    override fun setUpdatable(value: Boolean) {
+        _updatable.value = value
+    }
 
     /**
      * The logger
@@ -239,24 +282,6 @@ class PyssaComponent: IComponent {
      * @return True if component is successfully updated, false: Otherwise
      */
     override fun update(): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    /**
-     * Checks if a component is installed
-     *
-     * @return True if component is installed, false: Otherwise
-     */
-    override fun isInstalled(): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    /**
-     * Checks if a component has an update
-     *
-     * @return True if component has update, false: Otherwise
-     */
-    override fun hasUpdate(): Boolean {
         TODO("Not yet implemented")
     }
 }

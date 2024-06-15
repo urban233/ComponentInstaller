@@ -2,20 +2,38 @@ package org.ibci.componentinstaller.gui
 
 import androidx.compose.runtime.MutableState
 import kotlinx.coroutines.*
+import org.ibci.componentinstaller.model.components.IComponent
+import org.ibci.componentinstaller.util.logger.FileLogger
 
-class MainWindowController(theMainWindowStates: MainWindowStates) {
+class MainWindowController(theDialogStates: DialogStates) {
     /**
-     * All states of the main window that could be managed with the controller
+     * Class file logger
      */
-    val states = theMainWindowStates
+    val fileLogger: FileLogger = FileLogger()
+    /**
+     * All states of the different application dialogs that could be managed with the controller
+     */
+    val states = theDialogStates
+
     /**
      * Installs a component
      *
      */
-    suspend fun installComponent(aComponent: String, aJobIsRunningState: MutableState<Boolean>) {
+    suspend fun installComponent(
+        aComponent: IComponent,
+        aJobIsRunningState: MutableState<Boolean>
+    ) {
         aJobIsRunningState.value = true
         delay(4000)
-        this.states.installedComponents.add(aComponent.uppercase())
+        aComponent.install()
+        aComponent.setInstalled(true)
+
+//        for (tmpComponent in installedComponents) {
+//            if (aComponent == tmpComponent) {
+//                installedComponents.remove(aComponent)
+//            }
+//        }
+
         aJobIsRunningState.value = false
 
 //        // TODO: Add component object install method inside the if-statement

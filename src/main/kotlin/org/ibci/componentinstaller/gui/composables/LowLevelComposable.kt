@@ -1,10 +1,12 @@
 package org.ibci.componentinstaller.gui.composables
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -44,6 +46,32 @@ object LowLevelComposable {
                 text = aText,
                 color = Color.White
             )
+        }
+    }
+
+    /**
+     * Describes an alternative button design used for less actionable tasks
+     */
+    @Composable
+    fun outlinedStandardButton(
+        onClickFunction: () -> Unit,
+        aText: String,
+        isEnabled: Boolean,
+    ) {
+        OutlinedButton(
+            onClick = { onClickFunction() },
+            modifier = Modifier
+                .width(100.dp)
+                .height(24.dp)
+                .fillMaxWidth()
+                .pointerHoverIcon(PointerIcon.Hand),
+            contentPadding = PaddingValues(0.dp),
+            shape = RoundedCornerShape(25),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = GuiDefinitions.PYSSA_BLUE_COLOR),
+            border = BorderStroke(1.dp, GuiDefinitions.PYSSA_BLUE_COLOR),
+            enabled = isEnabled
+        ) {
+            Text(text = aText)
         }
     }
 

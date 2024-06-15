@@ -12,7 +12,6 @@ import androidx.compose.ui.window.rememberWindowState
 import org.ibci.componentinstaller.gui.*
 import org.ibci.componentinstaller.util.logger.FileLogger
 import org.ibci.componentinstaller.util.logger.LogLevel
-import java.util.logging.Level
 
 /**
  * ComponentInstaller GUI build function
@@ -43,7 +42,7 @@ fun main() = application {
         icon = painterResource("installer_24_dpi.png"),
         onCloseRequest = ::exitApplication
     ) {
-        val tmpStates = MainWindowStates()
+        val tmpStates = DialogStates()
         val tmpController = MainWindowController(tmpStates)
         App(tmpController)
     }

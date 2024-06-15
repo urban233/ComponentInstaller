@@ -2,7 +2,6 @@ package org.ibci.componentinstaller.gui.composables
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -11,8 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,11 +27,12 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.ibci.componentinstaller.gui.GuiDefinitions
 import org.ibci.componentinstaller.gui.MainWindowController
+import org.ibci.componentinstaller.model.components.IComponent
 
 /**
- * Class for storing high-level composable functions
+ * Object for storing high-level composable functions
  */
-class ComposableCollection {
+object ComposableCollection {
     /**
      * Describes the top header of the main window
      *
@@ -72,46 +70,45 @@ class ComposableCollection {
      *
      */
     @Composable
-    fun ComponentItem(name: String, aController: MainWindowController, version: String? = null) {
-        if (name != "") {
-            //<editor-fold desc="State variables">
-            val interactionSource = remember { MutableInteractionSource() }
-            val isHovered by interactionSource.collectIsHoveredAsState()
-            // State variable for the update availability of a single component
-            val updateAvailable = remember { mutableStateOf(false) }
-            // State variable for indicating if a job is running
-            val jobIsRunning = remember { mutableStateOf(false) }
-            //</editor-fold>
-            // Complete row container
-            Row (
+    fun ComponentItem(
+        aComponent: IComponent,
+        aController: MainWindowController
+    ) {
+        val interactionSource = remember { MutableInteractionSource() }
+        val isHovered by interactionSource.collectIsHoveredAsState()
+        val jobIsRunning = remember { mutableStateOf(false) }
+        val isUpdatable: MutableState<Boolean> = remember { mutableStateOf<Boolean>(aComponent.hasUpdate()) }
+        val isInstalled: MutableState<Boolean> = remember { mutableStateOf<Boolean>(aComponent.isInstalled()) }
+
+        Row(
+            modifier = Modifier
+                .background(if (isHovered) GuiDefinitions.COMPONENT_HOVER_BACKGROUND_COLOR else GuiDefinitions.COMPONENT_BACKGROUND_COLOR, shape = MaterialTheme.shapes.medium)
+                .hoverable(interactionSource = interactionSource)
+        ) {
+            LowLevelComposable.componentLogo("component_logos/wsl_96_dpi.png")
+            Row(
                 modifier = Modifier
-                    .background(if (isHovered) GuiDefinitions.COMPONENT_HOVER_BACKGROUND_COLOR else GuiDefinitions.COMPONENT_BACKGROUND_COLOR, shape = MaterialTheme.shapes.medium)
-                    .hoverable(interactionSource = interactionSource)
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                LowLevelComposable.componentLogo("component_logos/wsl_96_dpi.png")
-                // Row container for the component information
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    // Column container for the component information
-                    Column (modifier = Modifier.padding(vertical = 12.dp)) {
-                        ComponentActions(
-                            aName = name,
-                            aController = aController,
-                            anUpdateAvailableState = updateAvailable,
-                            aJobIsRunningState = jobIsRunning
-                        )
-                        ComponentInformation(
-                            aVersion = version,
-                            anUpdateAvailableState = updateAvailable,
-                            aJobIsRunningState = jobIsRunning
-                        )
-                        DialogComposable.ConfirmUninstallDialog(aController)
-                    }
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.padding(vertical = 12.dp)) {
+                    ComponentActions(
+                        aComponent = aComponent,
+                        aController = aController,
+                        anIsInstalledState = isInstalled,
+                        anUpdateAvailableState = isUpdatable,
+                        aJobIsRunningState = jobIsRunning
+                    )
+                    ComponentInformation(
+                        aComponent = aComponent,
+                        anIsInstalledState = isInstalled,
+                        anUpdateAvailableState = isUpdatable,
+                        aJobIsRunningState = jobIsRunning
+                    )
+                    DialogComposable.ConfirmUninstallDialog(aController)
+                    DialogComposable.AboutDialog(aController)
                 }
             }
         }
@@ -122,48 +119,48 @@ class ComposableCollection {
      *
      */
     @Composable
-    fun ComponentActions(aName: String,
-                         aController: MainWindowController,
-                         anUpdateAvailableState: MutableState<Boolean>,
-                         aJobIsRunningState: MutableState<Boolean>) {
-        //<editor-fold desc="State variables">
+    fun ComponentActions(
+        aComponent: IComponent,
+        aController: MainWindowController,
+        anIsInstalledState: MutableState<Boolean>,
+        anUpdateAvailableState: MutableState<Boolean>,
+        aJobIsRunningState: MutableState<Boolean>
+    ) {
+        val coroutineScope = rememberCoroutineScope()
         // State variable for the expand section of the more options functionality
         val moreOptionsExpanded = remember { mutableStateOf(false) }
-        // State variable for the coroutine scope of the possible actions
-        val coroutineScope = rememberCoroutineScope()
-        //</editor-fold>
+        val showConfirmUninstallDialog = remember { mutableStateOf(false) }
         Row {
-            // Text for the component name
-            LowLevelComposable.componentNameText(aName)
-            Spacer(modifier = Modifier.weight(1f))  // Spacer for pushing the buttons to the right
-            // Install/Update button
-            if (anUpdateAvailableState.value) {
-                LowLevelComposable.standardButton(
-                    onClickFunction = {
-                        coroutineScope.launch {
-                            aController.installComponent(aName, aJobIsRunningState)
-                        }
-                    },
-                    aText = "Update",
-                    isEnabled = !aJobIsRunningState.value
-                )
+            LowLevelComposable.componentNameText(aComponent.name)
+            Spacer(modifier = Modifier.weight(1f))
+            if (anIsInstalledState.value) {
+                if (anUpdateAvailableState.value) {
+                    LowLevelComposable.standardButton(
+                        onClickFunction = {
+                            coroutineScope.launch {
+                                aController.installComponent(aComponent, aJobIsRunningState)
+                                anIsInstalledState.value = aComponent.isInstalled()
+                            }
+                        },
+                        aText = "Update",
+                        isEnabled = !aJobIsRunningState.value
+                    )
+                }
             } else {
                 LowLevelComposable.standardButton(
                     onClickFunction = {
                         coroutineScope.launch {
-                            aController.installComponent(aName, aJobIsRunningState)
+                            aController.installComponent(aComponent, aJobIsRunningState)
+                            anIsInstalledState.value = aComponent.isInstalled()
                         }
                     },
                     aText = "Install",
                     isEnabled = !aJobIsRunningState.value
                 )
             }
-            // "More" button for more options
             Box {
                 IconButton(
-                    onClick = {
-                        moreOptionsExpanded.value = !moreOptionsExpanded.value
-                    },
+                    onClick = { moreOptionsExpanded.value = !moreOptionsExpanded.value },
                     modifier = Modifier
                         .width(48.dp)
                         .height(24.dp)
@@ -178,21 +175,28 @@ class ComposableCollection {
                             .height(24.dp),
                     )
                 }
-                // Dropdown menu for displaying more options
                 DropdownMenu(
                     expanded = moreOptionsExpanded.value,
                     onDismissRequest = { moreOptionsExpanded.value = false }
                 ) {
-                    DropdownMenuItem(onClick = { /* Handle menu item click */ }) {
-                        Text("Install Location")
+                    if (anIsInstalledState.value) {
+                        DropdownMenuItem(onClick = { /* handle dismiss */ }) {
+                            Text("Install Location")
+                        }
+                        DropdownMenuItem(onClick = { aController.states.confirmUninstallDialogVisible = true }) {
+                            Text(
+                                text = "Uninstall",
+                                color = GuiDefinitions.COMPONENT_UNINSTALL_COLOR
+                            )
+                        }
+                    } else {
+                        DropdownMenuItem(onClick = { aController.states.aboutDialogVisible = true }) {
+                            Text(
+                                text = "About"
+                            )
+                        }
                     }
-                    DropdownMenuItem(onClick = { aController.states.confirmUninstallDialogVisible = true }) {
-                        Text(
-                            text = "Uninstall",
-                            color = GuiDefinitions.COMPONENT_UNINSTALL_COLOR
-                        )
-                    }
-                    // Add more DropdownMenuItems as needed
+
                 }
             }
             Spacer(modifier = Modifier.width(1.dp))
@@ -204,19 +208,50 @@ class ComposableCollection {
      *
      */
     @Composable
-    fun ComponentInformation(aVersion: String? = null,
+    fun ComponentInformation(aComponent: IComponent,
+                             anIsInstalledState: MutableState<Boolean>,
                              anUpdateAvailableState: MutableState<Boolean>,
                              aJobIsRunningState: MutableState<Boolean>) {
         Column {
-            if (aVersion != null) {
+            if (anIsInstalledState.value) {
                 // Shows installed version
                 Text(
-                    text = aVersion,
+                    text = aComponent.localVersion.toString(),
                     fontSize = 12.sp,
                     color = Color.Gray,
                     modifier = Modifier
                         .padding(top = 6.dp)
                 )
+                if (anUpdateAvailableState.value) {
+                    // Shows update icon and text
+                    Row (
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 6.dp)
+                    ) {
+                        Icon (
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Update info icon",
+                            tint = GuiDefinitions.COMPONENT_INFO_ICON_COLOR,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Text(
+                            text = "Update available!",
+                            fontSize = 13.sp,
+                            color = Color.Black,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier
+                                .padding(bottom = 4.dp)
+                                .padding(horizontal = 4.dp)
+                        )
+                    }
+                    // Shows new version number
+                    Text(
+                        text = aComponent.remoteVersion.toString(),
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 6.dp)
+                    )
+                }
             }
             else {
                 // Shows a component description
@@ -227,36 +262,7 @@ class ComposableCollection {
                     modifier = Modifier.padding(top = 6.dp)
                 )
             }
-            if (anUpdateAvailableState.value) {
-                // Shows update icon and text
-                Row (
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(top = 6.dp)
-                ) {
-                    Icon (
-                        imageVector = Icons.Default.Info,
-                        contentDescription = "Update info icon",
-                        tint = GuiDefinitions.COMPONENT_INFO_ICON_COLOR,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Text(
-                        text = "Update available!",
-                        fontSize = 13.sp,
-                        color = Color.Black,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier
-                            .padding(bottom = 4.dp)
-                            .padding(horizontal = 4.dp)
-                    )
-                }
-                // Shows new version number
-                Text(
-                    text = "1.10.2",
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(top = 6.dp)
-                )
-            }
+
             if (aJobIsRunningState.value) {
                 // Shows progress indicator
                 LinearProgressIndicator(
@@ -265,38 +271,6 @@ class ComposableCollection {
                         .padding(top = 6.dp)
                         .clip(RoundedCornerShape(24.dp))
                 )
-            }
-        }
-    }
-
-    /**
-     * Describes the expand and collapse section
-     *
-     */
-    @Composable
-    fun ExpandableSection(
-        title: String,
-        expanded: Boolean,
-        onExpandChanged: (Boolean) -> Unit,
-        content: @Composable () -> Unit
-    ) {
-        Column {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onExpandChanged(!expanded) }
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = if (expanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowRight,
-                    contentDescription = null
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(title, fontSize = 20.sp)
-            }
-            if (expanded) {
-                content()
             }
         }
     }

@@ -1,12 +1,23 @@
 package org.ibci.componentinstaller.gui
 
+import androidx.compose.animation.rememberSplineBasedDecay
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.ibci.componentinstaller.gui.composables.ComposableCollection
+import org.ibci.componentinstaller.model.components.ExampleComponent
+import org.ibci.componentinstaller.model.components.IComponent
 
 class MainWindow {
 
@@ -15,32 +26,79 @@ class MainWindow {
      */
     @Composable
     fun MainFrame(aController: MainWindowController) {
-        val tmpComposableCollection = ComposableCollection()
         val scrollState = rememberScrollState()
+        val components = remember { mutableStateListOf(
+            ExampleComponent("WSL2"),
+            ExampleComponent("ColabFold"),
+            ExampleComponent("PySSA")
+        ) }
+        val isInstalledExpanded = remember { mutableStateOf(true) }
+        val isAvailableExpanded = remember { mutableStateOf(true) }
+
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.verticalScroll(scrollState)
-            ) {
-            tmpComposableCollection.MainWindowHeader()
+        ) {
+            ComposableCollection.MainWindowHeader()
 
-            tmpComposableCollection.ExpandableSection(
+            ExpandableSection(
                 title = "Installed",
-                expanded = aController.states.installedExpanded,
-                onExpandChanged = { aController.states.installedExpanded = it }
-            ) {
-                for (tmpInstalledComponent in aController.states.installedComponents) {
-                    tmpComposableCollection.ComponentItem(name = tmpInstalledComponent, version = "2022.1.2", aController = aController)
+                expandedState = isInstalledExpanded,
+                addComponents = {
+                    for (tmpComponent in components) {
+                        if (tmpComponent.isInstalled()) {
+                            ComposableCollection.ComponentItem(
+                                aComponent = tmpComponent,
+                                aController = aController
+                            )
+                        }
+                    }
                 }
-            }
-
-            tmpComposableCollection.ExpandableSection(
+            )
+            ExpandableSection(
                 title = "Available",
-                expanded = aController.states.availableExpanded,
-                onExpandChanged = { aController.states.availableExpanded = it }
-            ) {
-                for (tmpAvailableComponent in aController.states.availableComponents) {
-                    tmpComposableCollection.ComponentItem(name = tmpAvailableComponent, aController = aController)
+                expandedState = isAvailableExpanded,
+                addComponents = {
+                    for (tmpComponent in components) {
+                        if (!tmpComponent.isInstalled()) {
+                            ComposableCollection.ComponentItem(
+                                aComponent = tmpComponent,
+                                aController = aController
+                            )
+                        }
+                    }
                 }
+            )
+        }
+    }
+
+    /**
+     * Describes the expand and collapse section
+     *
+     */
+    @Composable
+    fun ExpandableSection(
+        title: String,
+        expandedState: MutableState<Boolean>,
+        addComponents: @Composable () -> Unit
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expandedState.value = !expandedState.value }
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (expandedState.value) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowRight,
+                    contentDescription = null
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(title, fontSize = 20.sp)
+            }
+            if (expandedState.value) {
+                addComponents()
             }
         }
     }
