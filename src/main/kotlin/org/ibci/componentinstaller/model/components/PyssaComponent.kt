@@ -164,12 +164,12 @@ class PyssaComponent: IComponent {
         if (!createWindowsShortcuts()) {
             return false
         }
-//        if (!setupPythonEnvironment()) {
-//            return false
-//        }
-//        if (!postInstallCleanup()) {
-//            return false
-//        }
+        if (!setupPythonEnvironment()) {
+            return false
+        }
+        if (!postInstallCleanup()) {
+            return false
+        }
         return true
     }
 
@@ -237,12 +237,12 @@ class PyssaComponent: IComponent {
             val shortcutName = "PySSA"
             val iconPath = PathDefinitions.PYSSA_ICON_FILEPATH
 
-            TODO("Continue! New .kt for SystemEntryHandler")
-//            // Create desktop icon
-//            SystemEntryHandler.createDesktopShortcut(executablePath, shortcutName, iconPath)
-//            // Create start menu entry
-//            SystemEntryHandler.createStartMenuShortcut(executablePath, shortcutName, iconPath)
-            // return true
+            TODO("New .kt for SystemEntryHandler")
+            // Create desktop icon
+            SystemEntryHandler.createDesktopShortcut(executablePath, shortcutName, iconPath)
+            // Create start menu entry
+            SystemEntryHandler.createStartMenuShortcut(executablePath, shortcutName, iconPath)
+             return true
         }
         catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")
