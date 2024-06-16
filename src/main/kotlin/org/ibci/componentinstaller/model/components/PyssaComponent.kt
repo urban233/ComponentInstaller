@@ -2,6 +2,7 @@ package org.ibci.componentinstaller.model.components
 
 import androidx.compose.runtime.mutableStateOf
 import org.ibci.componentinstaller.model.util.Io
+import org.ibci.componentinstaller.model.util.PythonHelper
 import org.ibci.componentinstaller.model.util.SystemEntryHandler
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
 import org.ibci.componentinstaller.model.util.definitions.PathDefinitions
@@ -263,8 +264,7 @@ class PyssaComponent: IComponent {
      */
     fun setupPythonEnvironment(): Boolean {
         try {
-            // fixme: Create PythonUtil
-            val tmpPythonUtil = PythonUtil()
+            val tmpPythonUtil = PythonHelper()
             if (!tmpPythonUtil.setupVenv()) {
                 fileLogger.append(LogLevel.ERROR, "Could not setup Python with .venv.")
                 return false
@@ -293,7 +293,7 @@ class PyssaComponent: IComponent {
     fun unzipPyssaPluginSrc(): Boolean {
         // Unzip plugin to plugin dir location
         val zipFilePath = "${PathDefinitions.PYSSA_PROGRAM_DIR}\\pyssa.zip"
-        val extractPath = "${PathDefinitions.PymolExeFilepath}\\pyssa"
+        val extractPath = "${PathDefinitions.PymolExe}\\pyssa"
 
         // Ensure the zip archive exists
         if (!File(zipFilePath).exists()) {
@@ -461,7 +461,7 @@ class PyssaComponent: IComponent {
     // fixme: If it needs to run asynchronously use suspend after fun!
     fun updatePyssaSrc(): Boolean {
         try {
-            File(PathDefinitions.PYSSA_PLUGIN).deleteRecursively()
+            File(PathDefinitions.PYSSA_RICH_CLIENT).deleteRecursively()
         }
         catch (ex: AccessDeniedException) {
             fileLogger.append(LogLevel.ERROR, "Error occurred during the delete process of the PySSA plugin path: $ex")

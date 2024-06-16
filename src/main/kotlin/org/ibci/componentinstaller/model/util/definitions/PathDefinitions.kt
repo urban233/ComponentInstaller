@@ -29,7 +29,7 @@ object PathDefinitions {
      * Filepath of the PySSA plugin
      *
      */
-    const val PYSSA_PLUGIN: String = "${PYSSA_PROGRAM_BIN_DIR}\\PySSA\""
+    const val PYSSA_RICH_CLIENT: String = "${PYSSA_PROGRAM_BIN_DIR}\\PySSA\""
     /**
      * Filepath of the windows arrangement winbatch executable
      *
@@ -41,8 +41,13 @@ object PathDefinitions {
      */
     const val PYSSA_ICON: String = "${PYSSA_PROGRAM_DIR}\\win_start\\images\\logo.ico"
     /**
-     * Path of the pymol.exe file
+     * Filepath of the pymol.exe file
      *
      */
-    const val PymolExeFilepath: String = "${PYSSA_PROGRAM_BIN_DIR}\\.venv\\Scripts\\pymol.exe"
+    const val PymolExe: String = "${PYSSA_PROGRAM_BIN_DIR}\\.venv\\Scripts\\pymol.exe"
+    /**
+     * Filepath of the pip executable file
+     *
+     */
+    const val PIP: String = "${PYSSA_PROGRAM_BIN_DIR}\\.venv\\Scripts\\pip.exe"
 }
