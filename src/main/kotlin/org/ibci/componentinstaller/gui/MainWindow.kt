@@ -13,11 +13,12 @@ import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.ibci.componentinstaller.gui.composables.ComposableCollection
+import org.ibci.componentinstaller.gui.composables.LowLevelComposable
 import org.ibci.componentinstaller.model.components.ExampleComponent
-import org.ibci.componentinstaller.model.components.IComponent
 
 class MainWindow {
 
@@ -95,7 +96,12 @@ class MainWindow {
                     contentDescription = null
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(title, fontSize = 20.sp)
+                LowLevelComposable.standardText(
+                    aText = title,
+                    aFontSize = 20.sp,
+                    aFontColor = Color.Black,
+                    aModifier = Modifier.padding(0.dp)
+                )
             }
             if (expandedState.value) {
                 addComponents()

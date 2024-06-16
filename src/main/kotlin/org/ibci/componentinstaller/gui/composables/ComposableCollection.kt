@@ -1,5 +1,6 @@
 package org.ibci.componentinstaller.gui.composables
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.hoverable
@@ -28,6 +29,7 @@ import kotlinx.coroutines.launch
 import org.ibci.componentinstaller.gui.GuiDefinitions
 import org.ibci.componentinstaller.gui.MainWindowController
 import org.ibci.componentinstaller.model.components.IComponent
+import org.ibci.componentinstaller.util.CustomFonts
 
 /**
  * Object for storing high-level composable functions
@@ -53,14 +55,11 @@ object ComposableCollection {
                         .size(96.dp)
                         .padding(top = 4.dp)
             )
-            Text(
-                text = "PySSA Component Installer",
-                style = TextStyle(
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 24.sp,
-                    fontFamily = FontFamily.SansSerif
-                )
+            LowLevelComposable.standardText(
+                aText = "PySSA Component Installer",
+                aFontSize = 24.sp,
+                aFontColor = Color.White,
+                aFontWeight = FontWeight.SemiBold,
             )
         }
     }
@@ -129,10 +128,9 @@ object ComposableCollection {
         val coroutineScope = rememberCoroutineScope()
         // State variable for the expand section of the more options functionality
         val moreOptionsExpanded = remember { mutableStateOf(false) }
-        val showConfirmUninstallDialog = remember { mutableStateOf(false) }
         Row {
             LowLevelComposable.componentNameText(aComponent.name)
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(1f)) // Spacer to push button to the right
             if (anIsInstalledState.value) {
                 if (anUpdateAvailableState.value) {
                     LowLevelComposable.standardButton(
@@ -147,7 +145,7 @@ object ComposableCollection {
                     )
                 }
             } else {
-                LowLevelComposable.standardButton(
+                LowLevelComposable.outlinedStandardButton(
                     onClickFunction = {
                         coroutineScope.launch {
                             aController.installComponent(aComponent, aJobIsRunningState)
@@ -215,12 +213,8 @@ object ComposableCollection {
         Column {
             if (anIsInstalledState.value) {
                 // Shows installed version
-                Text(
-                    text = aComponent.localVersion.toString(),
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    modifier = Modifier
-                        .padding(top = 6.dp)
+                LowLevelComposable.standardText(
+                    aText = aComponent.localVersion.toString()
                 )
                 if (anUpdateAvailableState.value) {
                     // Shows update icon and text
@@ -234,44 +228,76 @@ object ComposableCollection {
                             tint = GuiDefinitions.COMPONENT_INFO_ICON_COLOR,
                             modifier = Modifier.size(24.dp)
                         )
-                        Text(
-                            text = "Update available!",
-                            fontSize = 13.sp,
-                            color = Color.Black,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier
+                        LowLevelComposable.standardText(
+                            aText = "Update available!",
+                            aFontSize = 13.sp,
+                            aFontColor = Color.Black,
+                            aFontWeight = FontWeight.SemiBold,
+                            aModifier = Modifier
                                 .padding(bottom = 4.dp)
                                 .padding(horizontal = 4.dp)
                         )
                     }
                     // Shows new version number
-                    Text(
-                        text = aComponent.remoteVersion.toString(),
-                        fontSize = 12.sp,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(top = 6.dp)
+                    LowLevelComposable.standardText(
+                        aText = aComponent.remoteVersion.toString()
                     )
                 }
             }
             else {
                 // Shows a component description
-                Text(
-                    text = "This component can do cool things.",
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(top = 6.dp)
+                LowLevelComposable.standardText(
+                    aText = "This component can do cool things."
                 )
             }
 
             if (aJobIsRunningState.value) {
-                // Shows progress indicator
-                LinearProgressIndicator(
-                    color = GuiDefinitions.PYSSA_BLUE_COLOR,
-                    modifier = Modifier
-                        .padding(top = 6.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                )
+                ProgressIndication()
             }
         }
+    }
+
+    /**
+     * Describes the progress indication with text, progress bar and cancel button
+     *
+     */
+    @Composable
+    fun ProgressIndication() {
+        // Complete container
+        Column {
+            // Container for the text and cancel button
+            Row (verticalAlignment = Alignment.CenterVertically) {
+                // Progress description
+                LowLevelComposable.standardText(
+                    aText = "Job is running ..."
+                )
+                Spacer(modifier = Modifier.weight(1f)) // Spacer to push button to the right
+                // Cancel button
+                TextButton(
+                    onClick = { /* needs logic */ },
+                    modifier = Modifier
+                        .width(100.dp)
+                        .height(24.dp)
+                        .fillMaxWidth()
+                        .pointerHoverIcon(PointerIcon.Hand),
+                    contentPadding = PaddingValues(0.dp),
+                ) {
+                    LowLevelComposable.textForButton(
+                        aText = "Cancel",
+                        aColor = GuiDefinitions.PYSSA_BLUE_COLOR,
+                        aFontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+            // Progress bar
+            LinearProgressIndicator(
+                color = GuiDefinitions.PYSSA_BLUE_COLOR,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp)
+                    .clip(RoundedCornerShape(24.dp))
+            )
+        }
+
     }
 }

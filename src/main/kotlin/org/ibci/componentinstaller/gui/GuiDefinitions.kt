@@ -1,6 +1,8 @@
 package org.ibci.componentinstaller.gui
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import org.ibci.componentinstaller.util.CustomFonts
 
 object GuiDefinitions {
     /**
@@ -23,4 +25,8 @@ object GuiDefinitions {
      * Color for uninstall text
      */
     val COMPONENT_UNINSTALL_COLOR: Color = Color(179, 54, 55)
+    /**
+     * Default font family
+     */
+    val DEFAULT_FONT_FAMILY: FontFamily = CustomFonts.InterTight
 }
