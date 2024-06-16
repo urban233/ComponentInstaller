@@ -244,7 +244,7 @@ class PyssaComponent: IComponent {
             val shortcutName = "PySSA"
             val iconPath = PathDefinitions.PYSSA_ICON
 
-            // fixme: Runs when SystemEntryHandler is full implemented!
+            // fixme: Runs when SystemEntryHandler works!
             // Create desktop icon
             SystemEntryHandler.createDesktopShortcut(executablePath, shortcutName, iconPath)
             // Create start menu entry
