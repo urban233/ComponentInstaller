@@ -10,6 +10,7 @@ import org.ibci.componentinstaller.util.logger.FileLogger
 import org.ibci.componentinstaller.util.logger.LogLevel
 
 import java.io.File
+import java.nio.file.AccessDeniedException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -157,7 +158,7 @@ class PyssaComponent: IComponent {
      *
      * @return True if operation is successful, false: Otherwise
      */
-    // If it needs to run asynchronously use suspend after fun!
+    // fixme: If it needs to run asynchronously use suspend after fun!
     fun installPyssa(): Boolean {
         if (!File("${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip").exists()) {
             fileLogger.append(LogLevel.ERROR, "The windows_package.zip could not be found.")
@@ -285,6 +286,55 @@ class PyssaComponent: IComponent {
     }
 
     /**
+     * Unzip the pyssa.zip file to the specified extract directory
+     *
+     * @return True if operation is successful, false: Otherwise
+     */
+    fun unzipPyssaPluginSrc(): Boolean {
+        // Unzip plugin to plugin dir location
+        val zipFilePath = "${PathDefinitions.PYSSA_PROGRAM_DIR}\\pyssa.zip"
+        val extractPath = "${PathDefinitions.PymolExeFilepath}\\pyssa"
+
+        // Ensure the zip archive exists
+        if (!File(zipFilePath).exists()) {
+            fileLogger.append(LogLevel.ERROR, "The pyssa.zip file is missing! Exit installation process now.")
+            return false
+        }
+
+        // Ensure the extract directory exists
+        if (!File(extractPath).exists()) {
+            File(extractPath).mkdirs()
+        }
+
+        // Unzip the archive
+        try {
+            ZipFile(zipFilePath).use { zip ->
+                zip.entries().asSequence().forEach { entry ->
+                    val entryDestination = File(extractPath, entry.name)
+                    if (entry.isDirectory) {
+                        entryDestination.mkdirs()
+                    }
+                    else {
+                        entryDestination.parentFile.mkdirs()
+                        zip.getInputStream(entry).use { input ->
+                            entryDestination.outputStream().use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                    }
+                }
+            }
+            fileLogger.append(LogLevel.INFO, "Extraction successful!")
+        }
+        catch (ex: Exception) {
+            // Error while extracting pyssa.zip file, return false
+            fileLogger.append(LogLevel.ERROR, "Extraction ended with error: $ex")
+            return false
+        }
+        return true
+    }
+
+    /**
      * Cleans files when the installation is complete
      *
      * @return True if operation is successful, false: Otherwise
@@ -316,7 +366,7 @@ class PyssaComponent: IComponent {
      *
      * @return True if component is successfully uninstalled, false: Otherwise
      */
-    // If it needs to run asynchronously use suspend after fun!
+    // fixme: If it needs to run asynchronously use suspend after fun!
     override fun uninstall(): Boolean {
         try {
             val shortcutName = "PySSA"
@@ -326,7 +376,7 @@ class PyssaComponent: IComponent {
             File(PathDefinitions.PYSSA_PROGRAM_BIN_DIR).deleteRecursively()
             return true
         }
-        catch (ex: UnauthorizedAccessException) {
+        catch (ex: AccessDeniedException) {
             fileLogger.append(LogLevel.ERROR, "$ex")
             return false
         }
@@ -350,9 +400,9 @@ class PyssaComponent: IComponent {
             try {
                 File(PathDefinitions.PYSSA_PROGRAM_DIR).deleteRecursively()
             }
-            catch (ex: UnauthorizedAccessException) {
+            catch (ex: AccessDeniedException) {
                 fileLogger.append(LogLevel.WARNING, "$ex")
-                return "UnauthorizedAccessException: Unable to delete C:\\ProgramData\\pyssa directory."
+                return "AccessDeniedExceptionxception: Unable to delete C:\\ProgramData\\pyssa directory."
             }
             catch (ex: Exception) {
                 // Error occurred during one of the function calls, return the exception message
@@ -384,12 +434,57 @@ class PyssaComponent: IComponent {
     }
     //</editor-fold>
 
+    //<editor-fold desc="Update">
     /**
      * Update PySSA component
      *
      * @return True if component is successfully updated, false: Otherwise
      */
+    // fixme: If it needs to run asynchronously use suspend after fun!
     override fun update(): Boolean {
-        TODO("Not yet implemented")
+        try {
+            uninstall()
+            install()
+        }
+        catch (ex: Exception) {
+            fileLogger.append(LogLevel.ERROR, "$ex")
+            return false
+        }
+        return true
     }
+
+    /**
+     * Updates only the sources of PySSA
+     *
+     * @return True if component is successfully updated, false: Otherwise
+     */
+    // fixme: If it needs to run asynchronously use suspend after fun!
+    fun updatePyssaSrc(): Boolean {
+        try {
+            File(PathDefinitions.PYSSA_PLUGIN).deleteRecursively()
+        }
+        catch (ex: AccessDeniedException) {
+            fileLogger.append(LogLevel.ERROR, "Error occurred during the delete process of the PySSA plugin path: $ex")
+            return false
+        }
+        catch (ex: Exception) {
+            // Error occurred during one of the function calls, return false
+            return false
+        }
+
+        var tmpReturnCode = downloadWindowsPackage()
+        if (!tmpReturnCode) {
+            return false
+        }
+        tmpReturnCode = unzipWindowsPackage()
+        if (!tmpReturnCode) {
+            return false
+        }
+        tmpReturnCode = unzipPyssaPluginSrc()
+        if (!tmpReturnCode) {
+            return false
+        }
+        return true
+    }
+    //</editor-fold>
 }

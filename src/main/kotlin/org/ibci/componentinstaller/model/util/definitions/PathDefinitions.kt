@@ -26,6 +26,11 @@ object PathDefinitions {
      */
     const val PYSSA_INSTALLER_OFFLINE_WIN_PACKAGE_ZIP: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\offline_win_package.zip"
     /**
+     * Filepath of the PySSA plugin
+     *
+     */
+    const val PYSSA_PLUGIN: String = "${PYSSA_PROGRAM_BIN_DIR}\\PySSA\""
+    /**
      * Filepath of the windows arrangement winbatch executable
      *
      */
@@ -35,4 +40,9 @@ object PathDefinitions {
      *
      */
     const val PYSSA_ICON: String = "${PYSSA_PROGRAM_DIR}\\win_start\\images\\logo.ico"
+    /**
+     * Path of the pymol.exe file
+     *
+     */
+    const val PymolExeFilepath: String = "${PYSSA_PROGRAM_BIN_DIR}\\.venv\\Scripts\\pymol.exe"
 }
