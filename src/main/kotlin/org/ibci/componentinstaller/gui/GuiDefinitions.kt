@@ -10,6 +10,10 @@ object GuiDefinitions {
      */
     val PYSSA_BLUE_COLOR: Color = Color(54, 122, 246)
     /**
+     * Disabled button background color
+     */
+    val DISABLED_BUTTON_BACKGROUND_COLOR = Color(247, 248, 250)
+    /**
      * Background color for the component item
      */
     val COMPONENT_BACKGROUND_COLOR: Color = Color.White

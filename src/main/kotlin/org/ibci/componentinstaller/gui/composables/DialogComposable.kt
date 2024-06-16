@@ -1,22 +1,39 @@
 package org.ibci.componentinstaller.gui.composables
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.ibci.componentinstaller.gui.MainWindowController
+import org.ibci.componentinstaller.model.components.IComponent
+import org.ibci.componentinstaller.util.logger.FileLogger
+import org.ibci.componentinstaller.util.logger.LogLevel
 
 object DialogComposable {
     @Composable
-    fun ConfirmUninstallDialog(aController: MainWindowController) {
+    fun ConfirmUninstallDialog(
+        aComponent: IComponent,
+        aController: MainWindowController,
+        aShowConfirmUninstallDialogState: MutableState<Boolean>,
+        anIsInstalledState: MutableState<Boolean>,
+        anIsJobRunningState: MutableState<Boolean>,
+        anIsComponentJobRunning: MutableState<Boolean>,
+        aProgressDescription: MutableState<String>,
+        aComponentJob: MutableState<Job>
+    ) {
         // Dialog that appears when dialogVisible is true
-        if (aController.states.confirmUninstallDialogVisible) {
+        val coroutineScope = rememberCoroutineScope()
+        if (aShowConfirmUninstallDialogState.value) {
             AlertDialog(
-                onDismissRequest = { aController.states.confirmUninstallDialogVisible = false },
+                onDismissRequest = { aShowConfirmUninstallDialogState.value = false },
                 title = {
                     Text("Confirm Uninstall")
                 },
@@ -27,13 +44,26 @@ object DialogComposable {
                     Row (modifier = Modifier.padding(12.dp)) {
                         LowLevelComposable.standardButton(
                             onClickFunction = {
-                                aController.states.confirmUninstallDialogVisible = false
+                                aShowConfirmUninstallDialogState.value = false
+                                aComponentJob.value.cancel()
+                                aComponentJob.value = coroutineScope.launch {
+                                    anIsJobRunningState.value = true
+                                    anIsComponentJobRunning.value = true
+                                    aController.uninstallComponent(aComponent) { tmpProgressDescription ->
+                                            withContext(context = Dispatchers.Main) {
+                                                aProgressDescription.value = tmpProgressDescription
+                                        }
+                                    }
+                                    anIsInstalledState.value = aComponent.isInstalled()
+                                    anIsComponentJobRunning.value = false
+                                    anIsJobRunningState.value = false
+                                }
                             },
                             aText = "Uninstall",
                             isEnabled = true)
                         LowLevelComposable.outlinedStandardButton(
                             onClickFunction = {
-                                aController.states.confirmUninstallDialogVisible = false
+                                aShowConfirmUninstallDialogState.value = false
                             },
                             aText = "Cancel",
                             isEnabled = true
@@ -46,31 +76,26 @@ object DialogComposable {
     }
 
     @Composable
-    fun AboutDialog(aController: MainWindowController) {
-        // Dialog that appears when dialogVisible is true
-        if (aController.states.aboutDialogVisible) {
-            AlertDialog(
-                onDismissRequest = { aController.states.aboutDialogVisible = false },
-                title = {
-                    Text("About Component")
-                },
-                text = {
-                    Column {
-                        Text("Windows Subsystem for Linux (WSL) is a feature of Windows that allows you to run a Linux environment on your Windows machine, without the need for a separate virtual machine or dual booting. WSL is designed to provide a seamless and productive experience for developers who want to use both Windows and Linux at the same time.")
-                        Text("More information under: https://learn.microsoft.com/en-us/windows/wsl/about")
-                    }
-                },
-                confirmButton = {
-                    Row (modifier = Modifier.padding(12.dp)) {
-                        LowLevelComposable.standardButton(
-                            onClickFunction = {
-                                aController.states.aboutDialogVisible = false
-                            },
-                            aText = "OK",
-                            isEnabled = true)
-                    }
+    fun CustomDialog(onCloseRequest: () -> Unit, title: String, content: String) {
+        AlertDialog(
+            onDismissRequest = { onCloseRequest() },
+            title = {
+                Text(title)
+            },
+            text = {
+                Column {
+                    Text(content)
                 }
-            )
-        }
+            },
+            confirmButton = {
+                Row (modifier = Modifier.padding(12.dp)) {
+                    LowLevelComposable.standardButton(
+                        onClickFunction = { onCloseRequest() },
+                        aText = "OK",
+                        isEnabled = true
+                    )
+                }
+            }
+        )
     }
 }

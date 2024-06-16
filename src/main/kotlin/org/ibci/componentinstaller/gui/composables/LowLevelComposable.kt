@@ -2,14 +2,14 @@ package org.ibci.componentinstaller.gui.composables
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
 import org.ibci.componentinstaller.gui.GuiDefinitions
 import org.ibci.componentinstaller.util.CustomFonts
 
@@ -66,11 +67,19 @@ object LowLevelComposable {
                 .pointerHoverIcon(PointerIcon.Hand),
             contentPadding = PaddingValues(0.dp),
             shape = RoundedCornerShape(25),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black),
+            colors = ButtonDefaults.buttonColors(
+                contentColor = Color.Black,
+                backgroundColor = Color.White,
+                disabledContentColor = Color.LightGray,
+                disabledBackgroundColor = GuiDefinitions.DISABLED_BUTTON_BACKGROUND_COLOR),
             border = BorderStroke(1.dp, Color.LightGray),
             enabled = isEnabled
         ) {
-            textForButton(aText = aText, aColor = Color.Black)
+            if (isEnabled) {
+                textForButton(aText = aText, aColor = Color.Black)
+            } else {
+                textForButton(aText = aText, aColor = Color.LightGray)
+            }
         }
     }
 
@@ -123,6 +132,36 @@ object LowLevelComposable {
             fontWeight = FontWeight.Bold,
             fontFamily = GuiDefinitions.DEFAULT_FONT_FAMILY
         )
+    }
+
+    /**
+     * Describes a standard dropdown menu item
+     *
+     */
+    @Composable
+    fun standardDropdownMenuItem(
+        onClickFunction: () -> Unit,
+        aText: String,
+        aFontColor: Color = Color.Black,
+    ) {
+        DropdownMenuItem(
+            onClick = { onClickFunction() },
+            modifier = Modifier
+                .pointerHoverIcon(PointerIcon.Hand)
+        ) {
+            Text(
+                text = aText,
+                color = aFontColor,
+                fontWeight = FontWeight.Normal,
+                fontFamily = GuiDefinitions.DEFAULT_FONT_FAMILY,
+                fontSize = 15.sp
+            )
+//            Text(
+//                text = aText,
+//                color = aFontColor,
+//                fontSize = 13.sp
+//            )
+        }
     }
 
     /**

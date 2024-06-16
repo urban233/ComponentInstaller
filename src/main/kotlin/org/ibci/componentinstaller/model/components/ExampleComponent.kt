@@ -37,53 +37,56 @@ class ExampleComponent(aName: String) : IComponent {
         get() = KotlinVersion(0, 1, 0)
 
     /**
+     * Information about the component
+     */
+    override val componentInfo: ComponentInfo
+        get() = ComponentInfo(
+            aComponentLogoResourceFilepath = "component_logos/colabfold_96_dpi.png",
+            aComponentDescription = "A tool that could be useful"
+        )
+
+    /**
      * The installation state
      */
-    override var _installed = mutableStateOf(false)
-
-    /**
-     * Returns the installation state
-     *
-     * @return True if the component is installed, false: Otherwise
-     */
-    override fun isInstalled() = _installed.value
-
-    /**
-     * Sets the new value for the installation state
-     *
-     * @param value value A boolean that indicated the state of the installation
-     */
-    override fun setInstalled(value: Boolean) {
-        _installed.value = value
-    }
+    override var installedState = mutableStateOf(false)
 
     /**
      * The update state
      */
-    override var _updatable = mutableStateOf(true)
+    override var updatableState = mutableStateOf(false)
+
+    init {
+        isInstalled()
+        hasUpdate()
+    }
 
     /**
-     * Returns the update state
+     * Checks if the component is installed
+     *
+     * @return True if the component is installed, false: Otherwise
+     */
+    override fun isInstalled() : Boolean {
+        val tmpFile = File("C:\\TEMP\\example_component.isInstalled")
+        if (tmpFile.exists()) {
+            installedState.value = true
+        } else {
+            installedState.value = false
+        }
+        return installedState.value
+    }
+
+    /**
+     * Checks if the component has an update
      *
      * @return True if component has update, false: Otherwise
      */
-    override fun hasUpdate() = _updatable.value
-
-    /**
-     * Sets the new value for the update state of the component
-     *
-     * @param value A boolean that indicated the state of the installation
-     */
-    override fun setUpdatable(value: Boolean) {
-        _updatable.value = value
-    }
-
-    init {
-        val tmpFile = File("C:\\TEMP\\example_component.isInstalled")
-        setInstalled(tmpFile.exists())
-        if (isInstalled()) {
-            setUpdatable(false) // False is only used as temporary placeholder
+    override fun hasUpdate() : Boolean {
+        if (false) { // TODO: Add the correct logic in the if-statement
+            updatableState.value = true
+        } else {
+            updatableState.value = false
         }
+        return updatableState.value
     }
 
     /**
@@ -102,7 +105,8 @@ class ExampleComponent(aName: String) : IComponent {
      * @return True if component is successfully uninstalled, false: Otherwise
      */
     override fun uninstall(): Boolean {
-        TODO("Not yet implemented")
+        val tmpFile = File("C:\\TEMP\\example_component.isInstalled")
+        return tmpFile.delete()
     }
 
     /**
@@ -112,5 +116,23 @@ class ExampleComponent(aName: String) : IComponent {
      */
     override fun update(): Boolean {
         TODO("Not yet implemented")
+    }
+
+    /**
+     * Checks if all prerequisite are met for an installation
+     *
+     * @return True if component can be installed, false: Otherwise
+     */
+    override fun checkPrerequisitesForInstallation(): Boolean {
+        return true // TODO: This is only a placeholder!
+    }
+
+    /**
+     * Checks if all prerequisite are met for an uninstallation
+     *
+     * @return True if component can be uninstalled, false: Otherwise
+     */
+    override fun checkPrerequisitesForUninstallation(): Boolean {
+        return true // TODO: This is only a placeholder!
     }
 }

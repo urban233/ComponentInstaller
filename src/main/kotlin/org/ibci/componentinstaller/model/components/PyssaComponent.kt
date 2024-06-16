@@ -43,52 +43,29 @@ class PyssaComponent: IComponent {
         get() = KotlinVersion(-1, 0, 0)
 
     /**
+     * Information about the component
+     */
+    override val componentInfo: ComponentInfo
+        get() = ComponentInfo(
+            aComponentLogoResourceFilepath = "component_logos/pyssa_96_dpi.png",
+            aComponentDescription = "An easy-to-use protein structure research tool"
+        )
+
+    /**
      * The installation state
      */
-    override var _installed = mutableStateOf(false)
-
-    /**
-     * Returns the installation state
-     *
-     * @return True if the component is installed, false: Otherwise
-     */
-    override fun isInstalled() = _installed.value
-
-    /**
-     * Sets the new value for the installation state
-     *
-     * @param value value A boolean that indicated the state of the installation
-     */
-    override fun setInstalled(value: Boolean) {
-        _installed.value = value
-    }
+    override var installedState = mutableStateOf(false)
 
     /**
      * The update state
      */
-    override var _updatable = mutableStateOf(false)
-
-    /**
-     * Returns the update state
-     *
-     * @return True if component has update, false: Otherwise
-     */
-    override fun hasUpdate() = _updatable.value
-
-    /**
-     * Sets the new value for the update state of the component
-     *
-     * @param value A boolean that indicated the state of the installation
-     */
-    override fun setUpdatable(value: Boolean) {
-        _updatable.value = value
-    }
+    override var updatableState = mutableStateOf(false)
 
     /**
      * The logger
      *
      */
-    val fileLogger = FileLogger()
+    private val fileLogger = FileLogger()
     //</editor-fold>
 
     /**
@@ -264,8 +241,33 @@ class PyssaComponent: IComponent {
      */
 
 
+    /**
+     * Checks if the component is installed
+     *
+     * @return True if the component is installed, false: Otherwise
+     */
+    override fun isInstalled() : Boolean {
+        if (false) { // TODO: Add the correct logic in the if-statement
+            installedState.value = true
+        } else {
+            installedState.value = false
+        }
+        return installedState.value
+    }
 
-
+    /**
+     * Checks if the component has an update
+     *
+     * @return True if component has update, false: Otherwise
+     */
+    override fun hasUpdate() : Boolean {
+        if (false) { // TODO: Add the correct logic in the if-statement
+            updatableState.value = true
+        } else {
+            updatableState.value = false
+        }
+        return updatableState.value
+    }
 
     /**
      * Uninstall a component
@@ -283,5 +285,35 @@ class PyssaComponent: IComponent {
      */
     override fun update(): Boolean {
         TODO("Not yet implemented")
+    }
+
+    /**
+     * Checks if all prerequisite are met for an installation
+     *
+     * @return True if component can be installed, false: Otherwise
+     */
+    override fun checkPrerequisitesForInstallation(): Boolean {
+        val wslComponent: WslComponent = WslComponent()
+        val colabfoldComponent: ExampleComponent = ExampleComponent("ColabFold") // TODO: Change this if the colabfoldComponent class is available
+        if (wslComponent.isInstalled() && colabfoldComponent.isInstalled()) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    /**
+     * Checks if all prerequisite are met for an uninstallation
+     *
+     * @return True if component can be uninstalled, false: Otherwise
+     */
+    override fun checkPrerequisitesForUninstallation(): Boolean {
+        val wslComponent: WslComponent = WslComponent()
+        val colabfoldComponent: ExampleComponent = ExampleComponent("ColabFold") // TODO: Change this if the colabfoldComponent class is available
+        if (wslComponent.isInstalled() && colabfoldComponent.isInstalled()) {
+            return true
+        } else {
+            return false
+        }
     }
 }
