@@ -10,6 +10,7 @@ import org.ibci.componentinstaller.util.logger.LogLevel
 
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.zip.ZipFile
 
@@ -100,7 +101,7 @@ class PyssaComponent: IComponent {
         // TODO("Check if internet connection is available or not and select methods!")
         downloadWindowsPackage()
         copyOfflineWindowsPackage()
-
+        installPyssa()
         return true
     }
 
@@ -154,7 +155,8 @@ class PyssaComponent: IComponent {
      *
      * @return True if operation is successful, otherwise: false
      */
-    suspend fun installPyssa(): Boolean {
+    // If it needs to run asynchronously use suspend after fun!
+    fun installPyssa(): Boolean {
         if (!File("${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip").exists()) {
             fileLogger.append(LogLevel.ERROR, "The windows_package.zip could not be found.")
         }
@@ -173,6 +175,7 @@ class PyssaComponent: IComponent {
         return true
     }
 
+    //<editor-fold desc="Helper methods for installPySSA()">
     /**
      * Unzips the windows_package.zip file to the specified directory
      *
@@ -237,17 +240,17 @@ class PyssaComponent: IComponent {
             val shortcutName = "PySSA"
             val iconPath = PathDefinitions.PYSSA_ICON_FILEPATH
 
-            TODO("New .kt for SystemEntryHandler")
+            TODO("Runs when SystemEntryHandler is full implemented!")
             // Create desktop icon
             SystemEntryHandler.createDesktopShortcut(executablePath, shortcutName, iconPath)
             // Create start menu entry
             SystemEntryHandler.createStartMenuShortcut(executablePath, shortcutName, iconPath)
-             return true
         }
         catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")
             return false
         }
+        return true
     }
 
     /**
@@ -255,17 +258,54 @@ class PyssaComponent: IComponent {
      *
      * @return True if operation is successful, otherwise: false
      */
-
+    fun setupPythonEnvironment(): Boolean {
+        try {
+            // TODO("Create PythonUtil  ")
+            val tmpPythonUtil = PythonUtil()
+            if (!tmpPythonUtil.setupVenv()) {
+                fileLogger.append(LogLevel.ERROR, "Could not setup Python with .venv.")
+                return false
+            }
+            if (!tmpPythonUtil.pipWheelInstall("${PathDefinitions.PYSSA_PROGRAM_DIR}/Pmw-2.1.1.tar.gz")) {
+                fileLogger.append(LogLevel.ERROR, "Could not install Pmw.")
+                return false
+            }
+            if (!tmpPythonUtil.pipWheelInstall("${PathDefinitions.PYSSA_PROGRAM_DIR}/pymol-3.0.0-cp311-cp311-win_amd64.whl")) {
+                fileLogger.append(LogLevel.ERROR, "Could not install PyMOL.")
+                return false
+            }
+        }
+        catch (ex: Exception) {
+            fileLogger.append(LogLevel.ERROR, "$ex")
+            return false
+        }
+        return true
+    }
 
     /**
      * Cleans files when the installation is complete
      *
      * @return True if operation is successful, otherwise: false
      */
-
-
-
-
+    fun postInstallCleanup(): Boolean {
+        try {
+            Files.deleteIfExists(Paths.get("C:\\ProgramData\\IBCI\\PySSA\\Pmw-2.1.1.tar.gz"))
+            Files.deleteIfExists(Paths.get("C:\\ProgramData\\IBCI\\PySSA\\pymol-3.0.0-cp311-cp311-win_amd64.whl"))
+            val setupPythonPath = Paths.get("C:\\ProgramData\\IBCI\\PySSA\\bin\\setup_python_for_pyssa")
+            if (Files.exists(setupPythonPath)) {
+                Files.walk(setupPythonPath)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete)
+            }
+        }
+        catch (ex: Exception) {
+            fileLogger.append(LogLevel.ERROR, "$ex")
+            return false
+        }
+        return true
+    }
+    //</editor-fold>
 
     /**
      * Uninstall a component
