@@ -60,7 +60,7 @@ class WslComponent : IComponent {
     //</editor-fold>
 
     /**
-     * Install a component
+     * Install WSL2 component
      *
      * @return True if component is successfully installed, false: Otherwise
      */
@@ -77,7 +77,7 @@ class WslComponent : IComponent {
     }
 
     /**
-     * Uninstall a component
+     * Uninstall WSL2 component
      *
      * @return True if component is successfully uninstalled, false: Otherwise
      */
@@ -99,7 +99,7 @@ class WslComponent : IComponent {
     }
 
     /**
-     * Update a component
+     * Update WSL2 component
      *
      * @return True if component is successfully updated, false: Otherwise
      */
@@ -110,7 +110,7 @@ class WslComponent : IComponent {
     }
 
     /**
-     * Checks if the component is installed
+     * Checks if the WSL2 component is installed
      *
      * @return True if component is installed, false: Otherwise
      */
@@ -128,7 +128,7 @@ class WslComponent : IComponent {
     }
 
     /**
-     * Checks if the component has an update
+     * Checks if the WSL2 component has an update
      *
      * @return True if component has update, false: Otherwise
      */

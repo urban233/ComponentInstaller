@@ -12,8 +12,6 @@ import org.ibci.componentinstaller.util.logger.LogLevel
 
 import java.io.File
 import java.nio.file.AccessDeniedException
-import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.zip.ZipFile
 
@@ -80,13 +78,13 @@ class PyssaComponent: IComponent {
     override fun install(): Boolean {
         // First installer prototype has only an online version, therefore no offline package is needed but an internet connection
         downloadWindowsPackage()
-        // This copies also the downloaded windows package (this method does not differentiate between the two.
-        // Maybe refactor to copyWindowsPackage()
-        copyOfflineWindowsPackage()
+        // This copies also the downloaded windows package (this method does not differentiate between the two)
+        copyWindowsPackage()
         installPyssa()
         return true
     }
 
+    //<editor-fold desc="Windows package">
     /**
      * Downloads the Windows package for PySSA.
      *
@@ -110,18 +108,18 @@ class PyssaComponent: IComponent {
      *
      * @return True if operation is successful, false: Otherwise
      */
-    fun copyOfflineWindowsPackage(): Boolean {
+    fun copyWindowsPackage(): Boolean {
         try {
             // Create program dir under ProgramData
-            val programDir = File(PathDefinitions.PYSSA_PROGRAM_DIR)
-            if (!programDir.exists()) {
-                programDir.mkdirs()
+            val tmpProgramDir: File = File(PathDefinitions.PYSSA_PROGRAM_DIR)
+            if (!tmpProgramDir.exists()) {
+                tmpProgramDir.mkdirs()
             }
             // Copy the windows pyssa package
-            val targetFile = File("${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip")
-            if (!targetFile.exists()) {
-                val sourceFile = File(PathDefinitions.PYSSA_INSTALLER_OFFLINE_WIN_PACKAGE_ZIP)
-                sourceFile.copyTo(targetFile, overwrite = true)
+            val tmpTargetFile: File = File("${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip")
+            if (!tmpTargetFile.exists()) {
+                val sourceFile: File = File(PathDefinitions.PYSSA_INSTALLER_OFFLINE_WIN_PACKAGE_ZIP)
+                sourceFile.copyTo(tmpTargetFile, overwrite = true)
             }
             return true
         } catch (ex: Exception) {
@@ -129,6 +127,7 @@ class PyssaComponent: IComponent {
             return false
         }
     }
+    //</editor-fold>
 
     /**
      * Installs PySSA
@@ -162,24 +161,24 @@ class PyssaComponent: IComponent {
      * @return True if operation is successful, false: Otherwise
      */
     fun unzipWindowsPackage(): Boolean {
-        val zipFilePath = "${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip"
-        val extractPath = PathDefinitions.PYSSA_PROGRAM_DIR
+        val tmpZipFilePath: String = "${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip"
+        val tmpExtractPath: String = PathDefinitions.PYSSA_PROGRAM_DIR
 
         // Ensure the zip archive exists
-        if (!File(zipFilePath).exists()) {
+        if (!File(tmpZipFilePath).exists()) {
             fileLogger.append(LogLevel.ERROR, "The windows_package.zip file is missing! Exit installation process now.")
             return false
         }
 
         // Unzip the archive
         try {
-            ZipFile(zipFilePath).use { zip ->
+            ZipFile(tmpZipFilePath).use { zip ->
                 zip.entries().asSequence().forEach { entry ->
-                    val outputFile = File(extractPath, entry.name)
+                    val tmpOutputFile: File = File(tmpExtractPath, entry.name)
                     if (entry.isDirectory) {
-                        outputFile.mkdirs()
+                        tmpOutputFile.mkdirs()
                     } else {
-                        outputFile.outputStream().use { output ->
+                        tmpOutputFile.outputStream().use { output ->
                             zip.getInputStream(entry).use { input ->
                                 input.copyTo(output)
                             }
@@ -192,7 +191,7 @@ class PyssaComponent: IComponent {
             return false
         }
         try {
-            Files.delete(Paths.get(zipFilePath))
+            File(tmpZipFilePath).deleteRecursively()
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "Removing the offline windows package ended with error: ${ex.message}")
             return false
@@ -250,25 +249,25 @@ class PyssaComponent: IComponent {
      */
     fun unzipPyssaPluginSrc(): Boolean {
         // Unzip plugin to plugin dir location
-        val zipFilePath = "${PathDefinitions.PYSSA_PROGRAM_DIR}\\pyssa.zip"
-        val extractPath = "${PathDefinitions.PYSSA_PROGRAM_BIN_DIR}\\PySSA"
+        val tmpZipFilePath: String = "${PathDefinitions.PYSSA_PROGRAM_DIR}\\pyssa.zip"
+        val tmpExtractPath: String = "${PathDefinitions.PYSSA_PROGRAM_BIN_DIR}\\PySSA"
 
         // Ensure the zip archive exists
-        if (!File(zipFilePath).exists()) {
+        if (!File(tmpZipFilePath).exists()) {
             fileLogger.append(LogLevel.ERROR, "The pyssa.zip file is missing! Exit installation process now.")
             return false
         }
 
         // Ensure the extract directory exists
-        if (!File(extractPath).exists()) {
-            File(extractPath).mkdirs()
+        if (!File(tmpExtractPath).exists()) {
+            File(tmpExtractPath).mkdirs()
         }
 
         // Unzip the archive
         try {
-            ZipFile(zipFilePath).use { zip ->
+            ZipFile(tmpZipFilePath).use { zip ->
                 zip.entries().asSequence().forEach { entry ->
-                    val entryDestination = File(extractPath, entry.name)
+                    val entryDestination: File = File(tmpExtractPath, entry.name)
                     if (entry.isDirectory) {
                         entryDestination.mkdirs()
                     }
@@ -298,16 +297,11 @@ class PyssaComponent: IComponent {
      */
     fun postInstallCleanup(): Boolean {
         try {
-            // TODO: Files should be subsituted by File, this way you can use deleteRecursively instead of "walk"
-            // General rule of thumb: Always use the File class, until its to specific
-            Files.deleteIfExists(Paths.get("C:\\ProgramData\\IBCI\\PySSA\\Pmw-2.1.1.tar.gz"))
-            Files.deleteIfExists(Paths.get("C:\\ProgramData\\IBCI\\PySSA\\pymol-3.0.0-cp311-cp311-win_amd64.whl"))
-            val setupPythonPath = Paths.get("C:\\ProgramData\\IBCI\\PySSA\\bin\\setup_python_for_pyssa")
-            if (Files.exists(setupPythonPath)) {
-                Files.walk(setupPythonPath)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete)
+            File("${PathDefinitions.PYSSA_PROGRAM_DIR}\\Pmw-2.1.1.tar.gz").deleteRecursively()
+            File("${PathDefinitions.PYSSA_PROGRAM_DIR}\\pymol-3.0.0-cp311-cp311-win_amd64.whl").deleteRecursively()
+            val tmpSetupPythonPath: File = Paths.get("${PathDefinitions.PYSSA_PROGRAM_BIN_DIR}\\setup_python_for_pyssa").toFile()
+            if (tmpSetupPythonPath.exists()) {
+                tmpSetupPythonPath.deleteRecursively()
             }
             return true
         } catch (ex: Exception) {
@@ -340,14 +334,13 @@ class PyssaComponent: IComponent {
         }
     }
 
-    /**
-     * Makes a cleanup after the installation of PySSA
-     *
-     * @return Empty string if cleanup is successful, otherwise: Exception message
-     */
-    // fixme: Why should be the return type a string?
+//    /**
+//     * Makes a cleanup after the installation of PySSA
+//     *
+//     * @return Empty string if cleanup is successful, otherwise: Exception message
+//     */
+//     fixme: Why should be the return type a string?
 //    fun pyssaInstallationCleanup(): String {
-//        // fixme: Runs when SystemEntryHandler works!
 //        SystemEntryHandler.removeShortcut(Environment.SpecialFolder.DesktopDirectory, "PyMOL-PySSA")
 //        SystemEntryHandler.removeShortcut(Environment.SpecialFolder.StartMenu, "PyMOL-PySSA")
 //        if (File(PathDefinitions.PYSSA_PROGRAM_DIR).exists()) {
@@ -396,7 +389,7 @@ class PyssaComponent: IComponent {
      */
     override fun update(): Boolean {
         try {
-            // TODO: The method calls should be wraped in if-statements
+            // TODO: The method calls should be wrapped in if-statements
             uninstall()
             install()
             return true
@@ -404,6 +397,39 @@ class PyssaComponent: IComponent {
             fileLogger.append(LogLevel.ERROR, "$ex")
             return false
         }
+    }
+
+    /**
+     * Updates only the sources of PySSA
+     *
+     * @return True if component is successfully updated, false: Otherwise
+     */
+    fun updatePyssaSrc(): Boolean {
+        try {
+            File(PathDefinitions.PYSSA_RICH_CLIENT_DIR).deleteRecursively()
+        }
+        catch (ex: AccessDeniedException) {
+            fileLogger.append(LogLevel.ERROR, "Error occurred during the delete process of the PySSA plugin path: $ex")
+            return false
+        }
+        catch (ex: Exception) {
+            // Error occurred during one of the function calls, return false
+            return false
+        }
+
+        var tmpReturnCode = downloadWindowsPackage()
+        if (!tmpReturnCode) {
+            return false
+        }
+        tmpReturnCode = unzipWindowsPackage()
+        if (!tmpReturnCode) {
+            return false
+        }
+        tmpReturnCode = unzipPyssaPluginSrc()
+        if (!tmpReturnCode) {
+            return false
+        }
+        return true
     }
 
     /**
@@ -440,39 +466,6 @@ class PyssaComponent: IComponent {
      */
     override fun checkPrerequisitesForUninstallation(): Boolean {
         TODO("Not yet implemented")
-    }
-
-    /**
-     * Updates only the sources of PySSA
-     *
-     * @return True if component is successfully updated, false: Otherwise
-     */
-    fun updatePyssaSrc(): Boolean {
-        try {
-            File(PathDefinitions.PYSSA_RICH_CLIENT_DIR).deleteRecursively()
-        }
-        catch (ex: AccessDeniedException) {
-            fileLogger.append(LogLevel.ERROR, "Error occurred during the delete process of the PySSA plugin path: $ex")
-            return false
-        }
-        catch (ex: Exception) {
-            // Error occurred during one of the function calls, return false
-            return false
-        }
-
-        var tmpReturnCode = downloadWindowsPackage()
-        if (!tmpReturnCode) {
-            return false
-        }
-        tmpReturnCode = unzipWindowsPackage()
-        if (!tmpReturnCode) {
-            return false
-        }
-        tmpReturnCode = unzipPyssaPluginSrc()
-        if (!tmpReturnCode) {
-            return false
-        }
-        return true
     }
     //</editor-fold>
 }
