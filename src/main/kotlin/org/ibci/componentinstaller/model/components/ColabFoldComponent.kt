@@ -1,15 +1,13 @@
 package org.ibci.componentinstaller.model.components
 
 import androidx.compose.runtime.mutableStateOf
-import kotlinx.coroutines.Dispatchers
 import org.ibci.componentinstaller.model.util.CustomProcessBuilder
+import org.ibci.componentinstaller.model.util.Io.downloadFile
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
 import org.ibci.componentinstaller.model.util.definitions.PathDefinitions
 import org.ibci.componentinstaller.util.logger.FileLogger
 import org.ibci.componentinstaller.util.logger.LogLevel
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
 
 /**
  * Class for ColabFold component
@@ -72,23 +70,24 @@ class ColabFoldComponent: IComponent {
      */
     override fun install(): Boolean {
         // Check if alma-colabfold-9-rootfs.tar exists
-        if (!File("${PathDefinitions.PYSSA_INSTALLER_PROGRAM_DIR}\\temp\\alma-colabfold-9-rootfs.tar").exists()) {
-            // TODO: Integrate download of tar file
+        val tmpTarFile: String = "${PathDefinitions.PYSSA_INSTALLER_PROGRAM_DIR}\\temp\\alma-colabfold-9-rootfs.tar"
+        val tmpDestination: String = "${PathDefinitions.PYSSA_INSTALLER_PROGRAM_DIR}\\temp\\alma-colabfold-9-rootfs.tar"
+        if (tmpTarFile.isEmpty()) {
+            // Download of tar file
+            downloadFile(tmpTarFile, tmpDestination)
         }
 
         // Create necessary directories if they don't exist
-        // TODO: It might be clever to create definitons for this?!
-        val directoriesToCreate: Array<String> = arrayOf(
-            "C:\\ProgramData\\localcolabfold\\",
-            "C:\\ProgramData\\localcolabfold\\scripts\\",
-            "C:\\ProgramData\\localcolabfold\\storage\\"
+        val tmpDirectoriesToCreate: Array<String> = arrayOf(
+            PathDefinitions.LOCAL_COLABFOLD_DIR,
+            "${PathDefinitions.LOCAL_COLABFOLD_DIR}\\scripts\\",
+            "${PathDefinitions.LOCAL_COLABFOLD_DIR}\\storage\\"
         )
 
-        // TODO: This could be implemented with a for-loop for better readability
-        directoriesToCreate.forEach { directory ->
-            val path = Paths.get(directory)
-            if (Files.notExists(path)) {
-                Files.createDirectories(path)
+        for (tmpDirectory in tmpDirectoriesToCreate) {
+            val tmpPath: File = File(tmpDirectory)
+            if (!tmpPath.exists()) {
+                tmpPath.mkdirs()
             }
         }
         fileLogger.append(LogLevel.INFO, "Start AlmaLinux9 distribution import.")
@@ -130,15 +129,12 @@ class ColabFoldComponent: IComponent {
         try {
             fileLogger.append(LogLevel.INFO, "WSL2 command finished without errors.")
 
-            val ext4VhdxPath = Paths.get("C:\\ProgramData\\localcolabfold\\storage\\ext4.vhdx")
-            val localColabfoldPath = Paths.get("C:\\ProgramData\\localcolabfold\\")
+            val ext4VhdxPath: File = File("${PathDefinitions.LOCAL_COLABFOLD_DIR}\\storage\\ext4.vhdx")
+            val localColabfoldPath: File = File(PathDefinitions.LOCAL_COLABFOLD_DIR)
 
-            // TODO: Readablity could be improved if the File class (with deleteRecursively) is used
-            if (Files.notExists(ext4VhdxPath)) {
-                if (Files.exists(localColabfoldPath)) {
-                    Files.walk(localColabfoldPath)
-                        .sorted(Comparator.reverseOrder())
-                        .forEach(Files::delete)
+            if (!ext4VhdxPath.exists()) {
+                if (localColabfoldPath.exists()) {
+                    localColabfoldPath.deleteRecursively()
                 }
             }
             else {
