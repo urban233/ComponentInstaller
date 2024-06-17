@@ -13,16 +13,7 @@ object Io {
      * @throws IllegalArgumentException Gets thrown if any of the arguments are null.
      */
 
-    fun downloadFile(anUrl: String?, aFilepath: String?): Boolean {
-        //<editor-fold desc="Checks">
-        if (anUrl == null) {
-            throw IllegalArgumentException("anUrl is null.")
-        }
-        if (aFilepath == null) {
-            throw IllegalArgumentException("aFilepath is null.")
-        }
-        //</editor-fold>
-
+    fun downloadFile(anUrl: String, aFilepath: String): Boolean {
         val tmpClient = java.net.URL(anUrl).openStream()
         return try {
             tmpClient.use { input ->

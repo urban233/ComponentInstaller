@@ -58,7 +58,7 @@ class PythonHelper {
         //</editor-fold>
 
         try {
-            val process = ProcessBuilder(PathDefinitions.PIP, "install", aWheelFilepath)
+            val process = ProcessBuilder(PathDefinitions.PIP_EXE, "install", aWheelFilepath)
                 .redirectOutput(ProcessBuilder.Redirect.INHERIT)
                 .redirectError(ProcessBuilder.Redirect.INHERIT)
                 .start()

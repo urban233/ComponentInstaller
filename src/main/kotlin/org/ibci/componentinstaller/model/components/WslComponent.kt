@@ -10,10 +10,11 @@ import org.ibci.componentinstaller.util.logger.LogLevel
 import java.io.File
 
 class WslComponent : IComponent {
+    //<editor-fold desc="Class attributes">
     /**
      * File logger of this class
      */
-    val fileLogger: FileLogger = FileLogger()
+    private val fileLogger: FileLogger = FileLogger()
     /**
      * The component name
      */
@@ -56,6 +57,7 @@ class WslComponent : IComponent {
      * This should be seen as a private property, therefore the leading underscore.
      */
     override var updatableState: MutableState<Boolean> = mutableStateOf(false)
+    //</editor-fold>
 
     /**
      * Install a component
@@ -105,10 +107,10 @@ class WslComponent : IComponent {
      * @return True if component is installed, false: Otherwise
      */
     override fun isInstalled(): Boolean {
-        val processBuilder: ProcessBuilder = ProcessBuilder(PathDefinitions.CHECK_WSL_BATCH_SCRIPT_FILEPATH)
+        val processBuilder: ProcessBuilder = ProcessBuilder(PathDefinitions.CHECK_WSL_BAT)
         val process = processBuilder.start()
         process.waitFor()
-        val tmpFile = File(PathDefinitions.WSL_INSTALLED_FILEPATH)
+        val tmpFile = File(PathDefinitions.WSL_INSTALLED)
         if (tmpFile.exists()) {
             tmpFile.delete()
             return true
