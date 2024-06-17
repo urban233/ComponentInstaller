@@ -98,8 +98,8 @@ class ColabFoldComponent: IComponent {
             tmpCustomProcessBuilder.runCommand(
                 arrayOf(
                     "/C", "wsl", "--import", "almaColabfold9",
-                    "C:\\ProgramData\\localcolabfold\\storage",
-                    "C:\\ProgramData\\pyssa-installer\\temp\\alma-colabfold-9-rootfs.tar"
+                    "${PathDefinitions.LOCAL_COLABFOLD_DIR}\\storage",
+                    "${PathDefinitions.PYSSA_INSTALLER_PROGRAM_DIR}\\temp\\alma-colabfold-9-rootfs.tar"
                 )
             )
 
