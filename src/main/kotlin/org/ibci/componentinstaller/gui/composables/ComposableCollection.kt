@@ -48,7 +48,7 @@ object ComposableCollection {
                 .fillMaxWidth()
         ) {
             Image(
-                    painter = painterResource("installer_48_dpi.png"),
+                    painter = painterResource("assets/installer_48_dpi.png"),
                     contentDescription = "Logo Image",
                     modifier = Modifier
                         .size(96.dp)

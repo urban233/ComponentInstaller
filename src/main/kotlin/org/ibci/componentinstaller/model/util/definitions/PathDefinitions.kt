@@ -15,9 +15,17 @@ object PathDefinitions {
      */
     const val PYSSA_PROGRAM_BIN_DIR: String = "${PYSSA_PROGRAM_DIR}\\bin"
     /**
+     * Filepath of the version history JSON file
+     */
+    const val PYSSA_VERSION_HISTORY_JSON: String = "${PYSSA_PROGRAM_BIN_DIR}\\PySSA\\version_history.json" // TODO: This needs to be implemented in the GitHub repo of PySSA!
+    /**
      * Program path of the Installer
      */
     const val PYSSA_INSTALLER_PROGRAM_DIR: String = "C:\\ProgramData\\IBCI\\PySSA-Installer"
+    /**
+     * Filepath of the version history JSON file
+     */
+    const val PYSSA_INSTALLER_VERSION_HISTORY_JSON: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\version_history.json"
     /**
      * Filepath of the offline win package zip archive
      */

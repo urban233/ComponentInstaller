@@ -40,7 +40,7 @@ class WslComponent : IComponent {
      */
     override val componentInfo: ComponentInfo
         get() = ComponentInfo(
-            aComponentLogoResourceFilepath = "component_logos/wsl_96_dpi.png",
+            aComponentLogoResourceFilepath = "assets/component_logos/wsl_96_dpi.png",
             aComponentDescription = "Enables running a Linux kernel inside a lightweight virtual machine"
         )
 

@@ -1,9 +1,7 @@
 package org.ibci.componentinstaller.model.components
 
 import androidx.compose.runtime.mutableStateOf
-import org.ibci.componentinstaller.model.util.Io
-import org.ibci.componentinstaller.model.util.PythonHelper
-import org.ibci.componentinstaller.model.util.SystemEntryHandler
+import org.ibci.componentinstaller.model.util.*
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
 import org.ibci.componentinstaller.model.util.definitions.PathDefinitions
 import org.ibci.componentinstaller.model.util.definitions.UrlDefinitions
@@ -56,7 +54,7 @@ class PyssaComponent: IComponent {
      */
     override val componentInfo: ComponentInfo
         get() = ComponentInfo(
-            aComponentLogoResourceFilepath = "component_logos/pyssa_96_dpi.png",
+            aComponentLogoResourceFilepath = "assets/component_logos/pyssa_96_dpi.png",
             aComponentDescription = "An easy-to-use protein structure research tool"
         )
 
@@ -421,7 +419,13 @@ class PyssaComponent: IComponent {
      * @return True if component has update, false: Otherwise
      */
     override fun hasUpdate(): Boolean {
-        TODO("Not yet implemented")
+        val localVersionHistory: VersionHistory = VersionHelper.createVersionHistoryFromLocalFile(
+            PathDefinitions.PYSSA_VERSION_HISTORY_JSON
+        )
+        val remoteVersionHistory: VersionHistory = VersionHelper.createVersionHistoryFromRemoteSource(
+            UrlDefinitions.PYSSA_RICH_CLIENT_VERSION_HISTORY
+        )
+        return remoteVersionHistory.compareAgainstLatestVersionOfHistory(localVersionHistory.getLatestVersion()) == -1
     }
 
     /**

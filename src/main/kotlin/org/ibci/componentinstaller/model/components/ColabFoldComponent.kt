@@ -49,7 +49,7 @@ class ColabFoldComponent: IComponent {
      */
     override val componentInfo: ComponentInfo
         get() = ComponentInfo(
-            aComponentLogoResourceFilepath = "component_logos/colabfold_96_dpi.png",
+            aComponentLogoResourceFilepath = "assets/component_logos/colabfold_96_dpi.png",
             aComponentDescription = "An faster AlphaFold protein structure prediction tool"
         )
 
