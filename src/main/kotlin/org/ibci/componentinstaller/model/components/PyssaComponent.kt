@@ -77,11 +77,18 @@ class PyssaComponent: IComponent {
      */
     override fun install(): Boolean {
         // First installer prototype has only an online version, therefore no offline package is needed but an internet connection
-        downloadWindowsPackage()
-        // This copies also the downloaded windows package (this method does not differentiate between the two)
-        copyWindowsPackage()
-        installPyssa()
-        return true
+        try {
+            downloadWindowsPackage()
+            val tmpDownloadSuccessful: Boolean = downloadWindowsPackage()
+            if (tmpDownloadSuccessful) {
+                copyWindowsPackage()
+            }
+            installPyssa()
+            return true
+        } catch (ex: Exception) {
+            fileLogger.append(LogLevel.ERROR, "$ex")
+            return false
+        }
     }
 
     //<editor-fold desc="Windows package">
@@ -388,10 +395,14 @@ class PyssaComponent: IComponent {
      * @return True if component is successfully updated, false: Otherwise
      */
     override fun update(): Boolean {
+        // fixme: Do you mean that as a wrap function with if statements?
         try {
-            // TODO: The method calls should be wrapped in if-statements
-            uninstall()
-            install()
+            if (checkPrerequisitesForUninstallation()) {
+                uninstall()
+            }
+            if (checkPrerequisitesForInstallation()) {
+                install()
+            }
             return true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")

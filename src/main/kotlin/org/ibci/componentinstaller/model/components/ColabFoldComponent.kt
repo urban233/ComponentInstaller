@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.Dispatchers
 import org.ibci.componentinstaller.model.util.CustomProcessBuilder
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
+import org.ibci.componentinstaller.model.util.definitions.PathDefinitions
 import org.ibci.componentinstaller.util.logger.FileLogger
 import org.ibci.componentinstaller.util.logger.LogLevel
 import java.io.File
@@ -71,8 +72,7 @@ class ColabFoldComponent: IComponent {
      */
     override fun install(): Boolean {
         // Check if alma-colabfold-9-rootfs.tar exists
-        // TODO: Change filepath (C:\ProgramData\IBCI\PySSA-Installer is the correct dir!)
-        if (!File("C:\\ProgramData\\pyssa-installer\\temp\\alma-colabfold-9-rootfs.tar").exists()) {
+        if (!File("${PathDefinitions.PYSSA_INSTALLER_PROGRAM_DIR}\\temp\\alma-colabfold-9-rootfs.tar").exists()) {
             // TODO: Integrate download of tar file
         }
 
