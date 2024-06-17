@@ -1,23 +1,18 @@
-package org.ibci.componentinstaller.gui
+package org.ibci.componentinstaller.main
 
-import androidx.compose.runtime.MutableState
 import kotlinx.coroutines.*
 import org.ibci.componentinstaller.model.components.IComponent
 import org.ibci.componentinstaller.util.logger.FileLogger
 
-class MainWindowController(theDialogStates: DialogStates) {
+class MainWindowController() {
     /**
      * Class file logger
      */
-    val fileLogger: FileLogger = FileLogger()
-    /**
-     * All states of the different application dialogs that could be managed with the controller
-     */
-    val states = theDialogStates
+    private val fileLogger: FileLogger = FileLogger()
 
     /**
      * Installs a component
-     *uninstallComponent
+     *
      */
     suspend fun installComponent(
         aComponent: IComponent,
@@ -54,5 +49,28 @@ class MainWindowController(theDialogStates: DialogStates) {
         aProgressDescriptionUpdate("Finish up removing ...")
         delay(2000)
         aComponent.isInstalled()
+    }
+
+    /**
+     * Update a component
+     *
+     */
+    suspend fun updateComponent(
+        aComponent: IComponent,
+        aProgressDescriptionUpdate: suspend (String) -> Unit
+    ) : Boolean {
+        val tmpComponentName: String = aComponent.name
+        aProgressDescriptionUpdate("Updating component $tmpComponentName ...")
+        delay(2000)
+        aProgressDescriptionUpdate("Running update process ...")
+        delay(2000)
+        if(aComponent.update()) {
+            aProgressDescriptionUpdate("Finishing up update ...")
+            delay(2000)
+            aComponent.isInstalled()
+            return true
+        } else {
+            return false
+        }
     }
 }
