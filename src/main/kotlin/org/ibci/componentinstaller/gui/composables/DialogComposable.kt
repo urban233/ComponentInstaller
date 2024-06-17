@@ -7,15 +7,12 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.ibci.componentinstaller.gui.MainWindowController
+import org.ibci.componentinstaller.main.MainWindowController
 import org.ibci.componentinstaller.model.components.IComponent
-import org.ibci.componentinstaller.util.logger.FileLogger
-import org.ibci.componentinstaller.util.logger.LogLevel
 
 object DialogComposable {
     @Composable

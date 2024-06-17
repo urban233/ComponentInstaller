@@ -13,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,17 +23,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
-import androidx.compose.ui.window.rememberNotification
-import androidx.compose.ui.window.rememberTrayState
 import kotlinx.coroutines.*
 import org.ibci.componentinstaller.gui.DialogType
 import org.ibci.componentinstaller.gui.GuiDefinitions
-import org.ibci.componentinstaller.gui.MainWindowController
+import org.ibci.componentinstaller.main.MainWindowController
 import org.ibci.componentinstaller.model.components.IComponent
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
-import org.ibci.componentinstaller.util.logger.FileLogger
 
 /**
  * Object for storing high-level composable functions
@@ -127,7 +121,7 @@ object ComposableCollection {
                                         componentJob.value = coroutineScope.launch {
                                             anIsJobRunningState.value = true
                                             isComponentJobRunning.value = true
-                                            val tmpResult: Boolean = aController.installComponent(aComponent) { tmpProgressDescription -> // TODO: Sub the installComponent for updateComponent method!
+                                            val tmpResult: Boolean = aController.updateComponent(aComponent) { tmpProgressDescription ->
                                                     withContext(context = Dispatchers.Main) {
                                                         progressDescription.value = tmpProgressDescription
                                                 }

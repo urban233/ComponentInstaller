@@ -9,7 +9,6 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 
-import org.ibci.componentinstaller.gui.*
 import org.ibci.componentinstaller.util.logger.FileLogger
 import org.ibci.componentinstaller.util.logger.LogLevel
 
@@ -21,9 +20,8 @@ import org.ibci.componentinstaller.util.logger.LogLevel
 @Composable
 @Preview
 fun App(aController: MainWindowController) {
-    val tmpMainWindow = MainWindow()
     MaterialTheme {
-        tmpMainWindow.MainFrame(aController)
+        MainWindow(aController)
     }
 }
 
@@ -34,7 +32,6 @@ fun App(aController: MainWindowController) {
 fun main() = application {
     val fileLogger = FileLogger()
     fileLogger.append(LogLevel.INFO, "Starting application ...")
-    fileLogger.append(LogLevel.DEBUG, "Test message.")
     val tmpWindowState = rememberWindowState(width = 650.dp, height = 750.dp)
     Window(
         title = "PySSA-Installer",
@@ -42,9 +39,7 @@ fun main() = application {
         icon = painterResource("installer_24_dpi.png"),
         onCloseRequest = ::exitApplication
     ) {
-        val tmpStates = DialogStates()
-        val tmpController = MainWindowController(tmpStates)
-        App(tmpController)
+        App(MainWindowController())
     }
 }
 

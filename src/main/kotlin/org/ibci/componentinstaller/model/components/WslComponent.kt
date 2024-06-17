@@ -26,14 +26,14 @@ class WslComponent : IComponent {
      * IMPORTANT: If version could not be found, the major is -1!!!
      */
     override val localVersion: KotlinVersion
-        get() = KotlinVersion(1, 0, 0)
+        get() = KotlinVersion(1, 0, 0) // TODO: Check version number of WSL
 
     /**
      * The remote component version
      * IMPORTANT: If version could not be found, the major is -1!!!
      */
     override val remoteVersion: KotlinVersion
-        get() = KotlinVersion(1, 0, 0)
+        get() = KotlinVersion(1, 0, 0) // This is not necessary because the WSL is updated through windows
 
     /**
      * Information about the component
@@ -67,6 +67,7 @@ class WslComponent : IComponent {
     override fun install(): Boolean {
         try {
             val customProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
+            // TODO: Change the command below so it is executed as admin!
             customProcessBuilder.runCommand(arrayOf("/c", "wsl", "--install", "--no-distribution"))
             return true
         } catch (ex: Exception) {
@@ -83,8 +84,13 @@ class WslComponent : IComponent {
     override fun uninstall(): Boolean {
         try {
             val customProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
-            customProcessBuilder.runCommand(arrayOf("/c", "dism.exe", "/Online /Disable-Feature /FeatureName:VirtualMachinePlatform /NoRestart"))
-            customProcessBuilder.runCommand(arrayOf("/c", "dism.exe", "/Online /Disable-Feature /FeatureName:Microsoft-Windows-Subsystem-Linux /NoRestart"))
+            // TODO: Change the commands below so they are run as admin
+            customProcessBuilder.runCommand(
+                arrayOf("/c", "dism.exe", "/Online /Disable-Feature /FeatureName:VirtualMachinePlatform /NoRestart")
+            )
+            customProcessBuilder.runCommand(
+                arrayOf("/c", "dism.exe", "/Online /Disable-Feature /FeatureName:Microsoft-Windows-Subsystem-Linux /NoRestart")
+            )
             return true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, ex.toString())
@@ -98,7 +104,9 @@ class WslComponent : IComponent {
      * @return True if component is successfully updated, false: Otherwise
      */
     override fun update(): Boolean {
-        TODO("Not yet implemented")
+        // The update process is handled by the OS and the internal update state is always false,
+        // therefore true is returned
+        return true
     }
 
     /**
@@ -125,6 +133,7 @@ class WslComponent : IComponent {
      * @return True if component has update, false: Otherwise
      */
     override fun hasUpdate(): Boolean {
+        // The update is handled by the OS, therefore the state is always false
         updatableState.value = false
         return updatableState.value
     }
