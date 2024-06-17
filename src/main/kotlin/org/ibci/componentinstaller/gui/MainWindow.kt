@@ -1,23 +1,24 @@
 package org.ibci.componentinstaller.gui
 
-import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.ibci.componentinstaller.gui.composables.ComposableCollection
+import org.ibci.componentinstaller.gui.composables.LowLevelComposable
 import org.ibci.componentinstaller.model.components.ExampleComponent
-import org.ibci.componentinstaller.model.components.IComponent
+import org.ibci.componentinstaller.model.components.PyssaComponent
+import org.ibci.componentinstaller.model.components.WslComponent
 
 class MainWindow {
 
@@ -28,12 +29,13 @@ class MainWindow {
     fun MainFrame(aController: MainWindowController) {
         val scrollState = rememberScrollState()
         val components = remember { mutableStateListOf(
-            ExampleComponent("WSL2"),
+            WslComponent(),
             ExampleComponent("ColabFold"),
-            ExampleComponent("PySSA")
+            PyssaComponent()
         ) }
         val isInstalledExpanded = remember { mutableStateOf(true) }
         val isAvailableExpanded = remember { mutableStateOf(true) }
+        val isJobRunning = remember { mutableStateOf(false) }
 
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -49,7 +51,8 @@ class MainWindow {
                         if (tmpComponent.isInstalled()) {
                             ComposableCollection.ComponentItem(
                                 aComponent = tmpComponent,
-                                aController = aController
+                                aController = aController,
+                                anIsJobRunningState = isJobRunning
                             )
                         }
                     }
@@ -63,7 +66,8 @@ class MainWindow {
                         if (!tmpComponent.isInstalled()) {
                             ComposableCollection.ComponentItem(
                                 aComponent = tmpComponent,
-                                aController = aController
+                                aController = aController,
+                                anIsJobRunningState = isJobRunning
                             )
                         }
                     }
@@ -95,7 +99,12 @@ class MainWindow {
                     contentDescription = null
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(title, fontSize = 20.sp)
+                LowLevelComposable.standardText(
+                    aText = title,
+                    aFontSize = 20.sp,
+                    aFontColor = Color.Black,
+                    aModifier = Modifier.padding(0.dp)
+                )
             }
             if (expandedState.value) {
                 addComponents()

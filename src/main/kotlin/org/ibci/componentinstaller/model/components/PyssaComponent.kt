@@ -47,52 +47,29 @@ class PyssaComponent: IComponent {
         get() = KotlinVersion(-1, 0, 0)
 
     /**
+     * Information about the component
+     */
+    override val componentInfo: ComponentInfo
+        get() = ComponentInfo(
+            aComponentLogoResourceFilepath = "component_logos/pyssa_96_dpi.png",
+            aComponentDescription = "An easy-to-use protein structure research tool"
+        )
+
+    /**
      * The installation state
      */
-    override var _installed = mutableStateOf(false)
-
-    /**
-     * Returns the installation state
-     *
-     * @return True if the component is installed, false: Otherwise
-     */
-    override fun isInstalled() = _installed.value
-
-    /**
-     * Sets the new value for the installation state
-     *
-     * @param value value A boolean that indicated the state of the installation
-     */
-    override fun setInstalled(value: Boolean) {
-        _installed.value = value
-    }
+    override var installedState = mutableStateOf(false)
 
     /**
      * The update state
      */
-    override var _updatable = mutableStateOf(false)
-
-    /**
-     * Returns the update state
-     *
-     * @return True if component has update, false: Otherwise
-     */
-    override fun hasUpdate() = _updatable.value
-
-    /**
-     * Sets the new value for the update state of the component
-     *
-     * @param value A boolean that indicated the state of the installation
-     */
-    override fun setUpdatable(value: Boolean) {
-        _updatable.value = value
-    }
+    override var updatableState = mutableStateOf(false)
 
     /**
      * The logger
      *
      */
-    val fileLogger = FileLogger()
+    private val fileLogger = FileLogger()
     //</editor-fold>
 
     //<editor-fold desc="Install">
@@ -290,55 +267,43 @@ class PyssaComponent: IComponent {
      *
      * @return True if operation is successful, false: Otherwise
      */
-    fun unzipPyssaPluginSrc(): Boolean {
-        // Unzip plugin to plugin dir location
-        val zipFilePath = "${PathDefinitions.PYSSA_PROGRAM_DIR}\\pyssa.zip"
-        val extractPath = "${PathDefinitions.PymolExe}\\pyssa"
 
-        // Ensure the zip archive exists
-        if (!File(zipFilePath).exists()) {
-            fileLogger.append(LogLevel.ERROR, "The pyssa.zip file is missing! Exit installation process now.")
-            return false
-        }
-
-        // Ensure the extract directory exists
-        if (!File(extractPath).exists()) {
-            File(extractPath).mkdirs()
-        }
-
-        // Unzip the archive
-        try {
-            ZipFile(zipFilePath).use { zip ->
-                zip.entries().asSequence().forEach { entry ->
-                    val entryDestination = File(extractPath, entry.name)
-                    if (entry.isDirectory) {
-                        entryDestination.mkdirs()
-                    }
-                    else {
-                        entryDestination.parentFile.mkdirs()
-                        zip.getInputStream(entry).use { input ->
-                            entryDestination.outputStream().use { output ->
-                                input.copyTo(output)
-                            }
-                        }
-                    }
-                }
-            }
-            fileLogger.append(LogLevel.INFO, "Extraction successful!")
-        }
-        catch (ex: Exception) {
-            // Error while extracting pyssa.zip file, return false
-            fileLogger.append(LogLevel.ERROR, "Extraction ended with error: $ex")
-            return false
-        }
-        return true
-    }
 
     /**
      * Cleans files when the installation is complete
      *
      * @return True if operation is successful, false: Otherwise
      */
+
+
+    /**
+     * Checks if the component is installed
+     *
+     * @return True if the component is installed, false: Otherwise
+     */
+    override fun isInstalled() : Boolean {
+        if (false) { // TODO: Add the correct logic in the if-statement
+            installedState.value = true
+        } else {
+            installedState.value = false
+        }
+        return installedState.value
+    }
+
+    /**
+     * Checks if the component has an update
+     *
+     * @return True if component has update, false: Otherwise
+     */
+    override fun hasUpdate() : Boolean {
+        if (false) { // TODO: Add the correct logic in the if-statement
+            updatableState.value = true
+        } else {
+            updatableState.value = false
+        }
+        return updatableState.value
+    }
+
     fun postInstallCleanup(): Boolean {
         try {
             Files.deleteIfExists(Paths.get("C:\\ProgramData\\IBCI\\PySSA\\Pmw-2.1.1.tar.gz"))
@@ -434,7 +399,6 @@ class PyssaComponent: IComponent {
     }
     //</editor-fold>
 
-    //<editor-fold desc="Update">
     /**
      * Update PySSA component
      *
@@ -442,15 +406,37 @@ class PyssaComponent: IComponent {
      */
     // fixme: If it needs to run asynchronously use suspend after fun!
     override fun update(): Boolean {
-        try {
-            uninstall()
-            install()
-        }
-        catch (ex: Exception) {
-            fileLogger.append(LogLevel.ERROR, "$ex")
+        TODO("Not yet implemented")
+    }
+
+    /**
+     * Checks if all prerequisite are met for an installation
+     *
+     * @return True if component can be installed, false: Otherwise
+     */
+    override fun checkPrerequisitesForInstallation(): Boolean {
+        val wslComponent: WslComponent = WslComponent()
+        val colabfoldComponent: ExampleComponent = ExampleComponent("ColabFold") // TODO: Change this if the colabfoldComponent class is available
+        if (wslComponent.isInstalled() && colabfoldComponent.isInstalled()) {
+            return true
+        } else {
             return false
         }
-        return true
+    }
+
+    /**
+     * Checks if all prerequisite are met for an uninstallation
+     *
+     * @return True if component can be uninstalled, false: Otherwise
+     */
+    override fun checkPrerequisitesForUninstallation(): Boolean {
+        val wslComponent: WslComponent = WslComponent()
+        val colabfoldComponent: ExampleComponent = ExampleComponent("ColabFold") // TODO: Change this if the colabfoldComponent class is available
+        if (wslComponent.isInstalled() && colabfoldComponent.isInstalled()) {
+            return true
+        } else {
+            return false
+        }
     }
 
     /**

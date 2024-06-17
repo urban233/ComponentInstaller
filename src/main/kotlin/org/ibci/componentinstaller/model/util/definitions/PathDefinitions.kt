@@ -19,7 +19,7 @@ object PathDefinitions {
      * Program path of the Installer
      *
      */
-    const val PYSSA_INSTALLER_PROGRAM_DIR: String = "C:\\ProgramData\\PySSA-Installer"
+    const val PYSSA_INSTALLER_PROGRAM_DIR: String = "C:\\ProgramData\\IBCI\\PySSA-Installer"
     /**
      * Filepath of the offline win package zip archive
      *
@@ -30,6 +30,14 @@ object PathDefinitions {
      *
      */
     const val PYSSA_RICH_CLIENT: String = "${PYSSA_PROGRAM_BIN_DIR}\\PySSA\""
+    /**
+     * Filepath of the checkWsl batch script
+     */
+    const val CHECK_WSL_BATCH_SCRIPT_FILEPATH: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\scripts\\checkWsl.bat"
+    /**
+     * Filepath of the .wsl_installed file (indicating that the wsl is installed)
+     */
+    const val WSL_INSTALLED_FILEPATH: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\.wsl_installed"
     /**
      * Filepath of the windows arrangement winbatch executable
      *

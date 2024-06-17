@@ -25,18 +25,23 @@ interface IComponent {
     val remoteVersion: KotlinVersion
 
     /**
+     * Information about the component
+     */
+    val componentInfo: ComponentInfo
+
+    /**
      * The installation state
      *
      * This should be seen as a private property, therefore the leading underscore.
      */
-    var _installed: MutableState<Boolean>
+    var installedState: MutableState<Boolean>
 
     /**
      * The update state
      *
      * This should be seen as a private property, therefore the leading underscore.
      */
-    var _updatable: MutableState<Boolean>
+    var updatableState: MutableState<Boolean>
     //</editor-fold>
 
     /**
@@ -61,30 +66,30 @@ interface IComponent {
     fun update(): Boolean
 
     /**
-     * Returns the installed state
+     * Checks if the component is installed
      *
      * @return True if component is installed, false: Otherwise
      */
     fun isInstalled(): Boolean
 
     /**
-     * Sets the new value for the installed state of the component
-     *
-     * @param value A boolean that indicated the state of the installation
-     */
-    fun setInstalled(value: Boolean)
-
-    /**
-     * Returns the update state
+     * Checks if the component has an update
      *
      * @return True if component has update, false: Otherwise
      */
     fun hasUpdate(): Boolean
 
     /**
-     * Sets the new value for the update state of the component
+     * Checks if all prerequisite are met for an installation
      *
-     * @param value A boolean that indicated the state of the installation
+     * @return True if component can be installed, false: Otherwise
      */
-    fun setUpdatable(value: Boolean)
+    fun checkPrerequisitesForInstallation(): Boolean
+
+    /**
+     * Checks if all prerequisite are met for an uninstallation
+     *
+     * @return True if component can be uninstalled, false: Otherwise
+     */
+    fun checkPrerequisitesForUninstallation(): Boolean
 }

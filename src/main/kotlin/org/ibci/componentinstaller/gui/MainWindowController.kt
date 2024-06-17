@@ -17,31 +17,42 @@ class MainWindowController(theDialogStates: DialogStates) {
 
     /**
      * Installs a component
-     *
+     *uninstallComponent
      */
     suspend fun installComponent(
         aComponent: IComponent,
-        aJobIsRunningState: MutableState<Boolean>
+        aProgressDescriptionUpdate: suspend (String) -> Unit
+    ) : Boolean {
+        aProgressDescriptionUpdate("Starting installation ...")
+        delay(2000)
+        aProgressDescriptionUpdate("Running installation process ...")
+        delay(2000)
+        if (aComponent.install()) {
+            aProgressDescriptionUpdate("Finish up installation ...")
+            delay(2000)
+            aComponent.isInstalled()
+            return true
+        } else {
+            return false
+        }
+    }
+
+    /**
+     * Uninstalls a component
+     *
+     */
+    suspend fun uninstallComponent(
+        aComponent: IComponent,
+        aProgressDescriptionUpdate: suspend (String) -> Unit
     ) {
-        aJobIsRunningState.value = true
-        delay(4000)
-        aComponent.install()
-        aComponent.setInstalled(true)
-
-//        for (tmpComponent in installedComponents) {
-//            if (aComponent == tmpComponent) {
-//                installedComponents.remove(aComponent)
-//            }
-//        }
-
-        aJobIsRunningState.value = false
-
-//        // TODO: Add component object install method inside the if-statement
-//        if (aComponent.install()) {
-//            // Add component to installed section
-//            this.installedComponents.add(aComponent.name)
-//        } else {
-//            // Add component to available section
-//        }
+        val tmpComponentName: String = aComponent.name
+        aProgressDescriptionUpdate("Removing component $tmpComponentName ...")
+        delay(2000)
+        aProgressDescriptionUpdate("Running removing process ...")
+        delay(2000)
+        aComponent.uninstall()
+        aProgressDescriptionUpdate("Finish up removing ...")
+        delay(2000)
+        aComponent.isInstalled()
     }
 }
