@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "org.ibci"
-version = "0.0.2"
+version = "0.0.3"
 
 repositories {
     mavenCentral()
@@ -26,6 +26,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.6.4")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.5")
     implementation("net.java.dev.jna:jna:5.8.0")
     implementation("net.java.dev.jna:jna-platform:5.8.0")
 }

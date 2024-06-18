@@ -27,6 +27,10 @@ object PathDefinitions {
      */
     const val PYSSA_INSTALLER_VERSION_HISTORY_JSON: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\version_history.json"
     /**
+     * Filepath of the CmdElevator tool
+     */
+    const val CMD_ELEVATOR_EXE: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\tools\\CmdElevator.exe"
+    /**
      * Filepath of the offline win package zip archive
      */
     const val PYSSA_INSTALLER_OFFLINE_WIN_PACKAGE_ZIP: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\offline_win_package.zip"

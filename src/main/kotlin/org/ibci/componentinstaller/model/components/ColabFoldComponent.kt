@@ -97,7 +97,7 @@ class ColabFoldComponent: IComponent {
             val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
             tmpCustomProcessBuilder.runCommand(
                 arrayOf(
-                    "/C", "runas", "/user:Administrator", "wsl", "--import", "almaColabfold9",
+                    "/C", "wsl", "--import", "almaColabfold9",
                     "${PathDefinitions.LOCAL_COLABFOLD_DIR}\\storage",
                     tmpTarFile.absolutePath.toString()
                 )
@@ -123,7 +123,7 @@ class ColabFoldComponent: IComponent {
         fileLogger.append(LogLevel.INFO, "Start Colabfold uninstall.")
         try {
             val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
-            tmpCustomProcessBuilder.runCommand(arrayOf("/C", "runas", "/user:Administrator", "wsl --unregister almaColabfold9"))
+            tmpCustomProcessBuilder.runCommand(arrayOf("/C", "wsl --unregister almaColabfold9"))
             fileLogger.append(LogLevel.INFO, "WSL2 command finished without errors.")
             val localColabfoldPath: File = File(PathDefinitions.LOCAL_COLABFOLD_DIR)
             if (!File(PathDefinitions.LOCAL_COLABFOLD_STORAGE_VDHX).exists()) {

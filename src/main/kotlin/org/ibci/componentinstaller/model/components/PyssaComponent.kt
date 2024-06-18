@@ -439,13 +439,16 @@ class PyssaComponent: IComponent {
      * @return True if component has update, false: Otherwise
      */
     override fun hasUpdate(): Boolean {
-        val localVersionHistory: VersionHistory = VersionHelper.createVersionHistoryFromLocalFile(
-            PathDefinitions.PYSSA_VERSION_HISTORY_JSON
-        )
-        val remoteVersionHistory: VersionHistory = VersionHelper.createVersionHistoryFromRemoteSource(
-            UrlDefinitions.PYSSA_RICH_CLIENT_VERSION_HISTORY
-        )
-        return remoteVersionHistory.compareAgainstLatestVersionOfHistory(localVersionHistory.getLatestVersion()) == -1
+        if (isInstalled()) {
+            val localVersionHistory: VersionHistory = VersionHelper.createVersionHistoryFromLocalFile(
+                PathDefinitions.PYSSA_VERSION_HISTORY_JSON
+            )
+            val remoteVersionHistory: VersionHistory = VersionHelper.createVersionHistoryFromRemoteSource(
+                UrlDefinitions.PYSSA_RICH_CLIENT_VERSION_HISTORY
+            )
+            return remoteVersionHistory.compareAgainstLatestVersionOfHistory(localVersionHistory.getLatestVersion()) == -1
+        }
+        return false
     }
 
     /**

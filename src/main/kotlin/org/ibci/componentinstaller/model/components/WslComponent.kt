@@ -2,6 +2,7 @@ package org.ibci.componentinstaller.model.components
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Path
 import org.ibci.componentinstaller.model.util.CustomProcessBuilder
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
 import org.ibci.componentinstaller.model.util.definitions.PathDefinitions
@@ -40,7 +41,7 @@ class WslComponent : IComponent {
      */
     override val componentInfo: ComponentInfo
         get() = ComponentInfo(
-            aComponentLogoResourceFilepath = "component_logos/wsl_96_dpi.png",
+            aComponentLogoResourceFilepath = "assets/component_logos/wsl_96_dpi.png",
             aComponentDescription = "Enables running a Linux kernel inside a lightweight virtual machine",
             anInstallationLocation = ""
         )
@@ -68,7 +69,10 @@ class WslComponent : IComponent {
     override fun install(): Boolean {
         try {
             val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
-            tmpCustomProcessBuilder.runCommand(arrayOf("/c", "runas", "/user:Administrator", "wsl", "--install", "--no-distribution"))
+            tmpCustomProcessBuilder.runCommand(
+                anExecutable = PathDefinitions.CMD_ELEVATOR_EXE,
+                aCommand = arrayOf("cmd.exe", "/C", "wsl", "--install", "--no-distribution")
+            )
             return true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, ex.toString())
@@ -85,10 +89,12 @@ class WslComponent : IComponent {
         try {
             val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
             tmpCustomProcessBuilder.runCommand(
-                arrayOf("/c", "runas", "/user:Administrator", "dism.exe", "/Online /Disable-Feature /FeatureName:VirtualMachinePlatform /NoRestart")
+                anExecutable = PathDefinitions.CMD_ELEVATOR_EXE,
+                aCommand = arrayOf("cmd.exe", "/C", "dism.exe", "/Online /Disable-Feature /FeatureName:VirtualMachinePlatform /NoRestart")
             )
             tmpCustomProcessBuilder.runCommand(
-                arrayOf("/c", "runas", "/user:Administrator", "dism.exe", "/Online /Disable-Feature /FeatureName:Microsoft-Windows-Subsystem-Linux /NoRestart")
+                anExecutable = PathDefinitions.CMD_ELEVATOR_EXE,
+                aCommand = arrayOf("cmd.exe", "/C", "dism.exe", "/Online /Disable-Feature /FeatureName:Microsoft-Windows-Subsystem-Linux /NoRestart")
             )
             return true
         } catch (ex: Exception) {
@@ -158,12 +164,13 @@ class WslComponent : IComponent {
      * @return True if component can be uninstalled, false: Otherwise
      */
     override fun checkPrerequisitesForUninstallation(): Boolean {
-        val tmpColabfoldComponent: ColabFoldComponent = ColabFoldComponent()
-        val tmpPyssaComponent: PyssaComponent = PyssaComponent()
-        if (!tmpPyssaComponent.isInstalled() && !tmpColabfoldComponent.isInstalled()) {
-            return true
-        } else {
-            return false
-        }
+        return false
+//        val tmpColabfoldComponent: ColabFoldComponent = ColabFoldComponent()
+//        val tmpPyssaComponent: PyssaComponent = PyssaComponent()
+//        if (!tmpPyssaComponent.isInstalled() && !tmpColabfoldComponent.isInstalled()) {
+//            return true
+//        } else {
+//            return false
+//        }
     }
 }

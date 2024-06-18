@@ -14,6 +14,10 @@ object UrlDefinitions {
      */
     const val COLABFOLD_ROOTFS_TAR: String = "https://w-hs.sciebo.de/s/q5oYjcZdEzCDyEH/download"
     /**
+     * Url for the setup.exe of the installer
+     */
+    const val PYSSA_INSTALLER_SETUP_EXE: String = "https://w-hs.sciebo.de/s/4QvFf1tz3Nf40IT/download"
+    /**
      * Url for the version history JSON file for the installer
      */
     const val PYSSA_INSTALLER_VERSION_HISTORY: String = "https://w-hs.sciebo.de/s/asQ4eojTdFJVtVR/download"
