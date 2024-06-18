@@ -6,7 +6,8 @@ package org.ibci.componentinstaller.model.components
  */
 class ComponentInfo (
     aComponentLogoResourceFilepath: String,
-    aComponentDescription: String
+    aComponentDescription: String,
+    anInstallationLocation: String
 ) {
     /**
      * Resource filepath to the component logo
@@ -16,4 +17,8 @@ class ComponentInfo (
      * Short description of the component
      */
     val componentDescription: String = aComponentDescription
+    /**
+     * Path of the installation
+     */
+    val installationLocation: String = anInstallationLocation
 }

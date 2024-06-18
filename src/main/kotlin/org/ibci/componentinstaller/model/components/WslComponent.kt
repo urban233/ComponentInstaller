@@ -26,7 +26,7 @@ class WslComponent : IComponent {
      * IMPORTANT: If version could not be found, the major is -1!!!
      */
     override val localVersion: KotlinVersion
-        get() = KotlinVersion(1, 0, 0) // TODO: Check version number of WSL
+        get() = KotlinVersion(2, 2, 4) // This version number is NOT constant and needs to be checked
 
     /**
      * The remote component version
@@ -40,8 +40,9 @@ class WslComponent : IComponent {
      */
     override val componentInfo: ComponentInfo
         get() = ComponentInfo(
-            aComponentLogoResourceFilepath = "assets/component_logos/wsl_96_dpi.png",
-            aComponentDescription = "Enables running a Linux kernel inside a lightweight virtual machine"
+            aComponentLogoResourceFilepath = "component_logos/wsl_96_dpi.png",
+            aComponentDescription = "Enables running a Linux kernel inside a lightweight virtual machine",
+            anInstallationLocation = ""
         )
 
     /**
@@ -60,15 +61,14 @@ class WslComponent : IComponent {
     //</editor-fold>
 
     /**
-     * Install a component
+     * Install WSL2 component
      *
      * @return True if component is successfully installed, false: Otherwise
      */
     override fun install(): Boolean {
         try {
-            val customProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
-            // TODO: Change the command below so it is executed as admin!
-            customProcessBuilder.runCommand(arrayOf("/c", "wsl", "--install", "--no-distribution"))
+            val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
+            tmpCustomProcessBuilder.runCommand(arrayOf("/c", "runas", "/user:Administrator", "wsl", "--install", "--no-distribution"))
             return true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, ex.toString())
@@ -77,19 +77,18 @@ class WslComponent : IComponent {
     }
 
     /**
-     * Uninstall a component
+     * Uninstall WSL2 component
      *
      * @return True if component is successfully uninstalled, false: Otherwise
      */
     override fun uninstall(): Boolean {
         try {
-            val customProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
-            // TODO: Change the commands below so they are run as admin
-            customProcessBuilder.runCommand(
-                arrayOf("/c", "dism.exe", "/Online /Disable-Feature /FeatureName:VirtualMachinePlatform /NoRestart")
+            val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
+            tmpCustomProcessBuilder.runCommand(
+                arrayOf("/c", "runas", "/user:Administrator", "dism.exe", "/Online /Disable-Feature /FeatureName:VirtualMachinePlatform /NoRestart")
             )
-            customProcessBuilder.runCommand(
-                arrayOf("/c", "dism.exe", "/Online /Disable-Feature /FeatureName:Microsoft-Windows-Subsystem-Linux /NoRestart")
+            tmpCustomProcessBuilder.runCommand(
+                arrayOf("/c", "runas", "/user:Administrator", "dism.exe", "/Online /Disable-Feature /FeatureName:Microsoft-Windows-Subsystem-Linux /NoRestart")
             )
             return true
         } catch (ex: Exception) {
@@ -99,7 +98,7 @@ class WslComponent : IComponent {
     }
 
     /**
-     * Update a component
+     * Update WSL2 component
      *
      * @return True if component is successfully updated, false: Otherwise
      */
@@ -110,14 +109,14 @@ class WslComponent : IComponent {
     }
 
     /**
-     * Checks if the component is installed
+     * Checks if the WSL2 component is installed
      *
      * @return True if component is installed, false: Otherwise
      */
     override fun isInstalled(): Boolean {
-        val processBuilder: ProcessBuilder = ProcessBuilder(PathDefinitions.CHECK_WSL_BAT)
-        val process = processBuilder.start()
-        process.waitFor()
+        val tmpProcessBuilder: ProcessBuilder = ProcessBuilder(PathDefinitions.CHECK_WSL_BAT)
+        val tmpProcess = tmpProcessBuilder.start()
+        tmpProcess.waitFor()
         val tmpFile = File(PathDefinitions.WSL_INSTALLED)
         if (tmpFile.exists()) {
             tmpFile.delete()
@@ -128,7 +127,7 @@ class WslComponent : IComponent {
     }
 
     /**
-     * Checks if the component has an update
+     * Checks if the WSL2 component has an update
      *
      * @return True if component has update, false: Otherwise
      */
@@ -144,9 +143,9 @@ class WslComponent : IComponent {
      * @return True if component can be installed, false: Otherwise
      */
     override fun checkPrerequisitesForInstallation(): Boolean {
-        val colabfoldComponent: ExampleComponent = ExampleComponent("ColabFold") // TODO: Change this if the colabfoldComponent class is available
-        val pyssaComponent: PyssaComponent = PyssaComponent()
-        if (!pyssaComponent.isInstalled() && !colabfoldComponent.isInstalled()) {
+        val tmpColabfoldComponent: ColabFoldComponent = ColabFoldComponent()
+        val tmpPyssaComponent: PyssaComponent = PyssaComponent()
+        if (!tmpPyssaComponent.isInstalled() && !tmpColabfoldComponent.isInstalled()) {
             return true
         } else {
             return false
@@ -159,9 +158,9 @@ class WslComponent : IComponent {
      * @return True if component can be uninstalled, false: Otherwise
      */
     override fun checkPrerequisitesForUninstallation(): Boolean {
-        val colabfoldComponent: ExampleComponent = ExampleComponent("ColabFold") // TODO: Change this if the colabfoldComponent class is available
-        val pyssaComponent: PyssaComponent = PyssaComponent()
-        if (!pyssaComponent.isInstalled() && !colabfoldComponent.isInstalled()) {
+        val tmpColabfoldComponent: ColabFoldComponent = ColabFoldComponent()
+        val tmpPyssaComponent: PyssaComponent = PyssaComponent()
+        if (!tmpPyssaComponent.isInstalled() && !tmpColabfoldComponent.isInstalled()) {
             return true
         } else {
             return false

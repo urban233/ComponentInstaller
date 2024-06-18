@@ -13,9 +13,8 @@ class PythonHelper {
     //<editor-fold desc="Class attributes">
     /**
      * The logger
-     *
      */
-    val fileLogger = FileLogger()
+    private val fileLogger = FileLogger()
     //</editor-fold>
 
     /**
@@ -25,13 +24,8 @@ class PythonHelper {
      */
     fun setupVenv(): Boolean {
         try {
-            val process = ProcessBuilder("cmd.exe", "/C", "${PathDefinitions.PYSSA_PROGRAM_BIN_DIR}\\setup_python_for_pyssa\\setup_python.bat")
-                .directory(File("${PathDefinitions.PYSSA_PROGRAM_BIN_DIR}\\setup_python_for_pyssa"))
-                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                .redirectError(ProcessBuilder.Redirect.INHERIT)
-                .start()
-
-            process.waitFor()
+            val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
+            tmpCustomProcessBuilder.runCommand(arrayOf("/C", "${PathDefinitions.PYSSA_PROGRAM_BIN_DIR}\\setup_python_for_pyssa\\setup_python.bat"))
         }
         catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")
@@ -45,26 +39,20 @@ class PythonHelper {
      *
      * @param aWheelFilepath The filepath of the wheel file to install
      * @throws IllegalArgumentException Thrown if [aWheelFilepath] does not exist
-     * @throws NullPointerException Thrown if [aWheelFilepath] is null
      * @return True if operation is successful, false: Otherwise
      */
     fun pipWheelInstall(aWheelFilepath: String): Boolean {
         //<editor-fold desc="Checks">
-        // Check if aWheelFilepath is null
-        requireNotNull(aWheelFilepath) { "aWheelFilepath must not be null." }
-
-        // Check if aWheelFilepath exists
         require(File(aWheelFilepath).exists()) { "aWheelFilepath does not exist." }
         //</editor-fold>
 
         try {
-            val process = ProcessBuilder(PathDefinitions.PIP_EXE, "install", aWheelFilepath)
-                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                .redirectError(ProcessBuilder.Redirect.INHERIT)
-                .start()
-
-            process.waitFor()
-            return process.exitValue() == 0 // Return true if exit value is 0 (success)
+            val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
+            tmpCustomProcessBuilder.runCommand(
+                anExecutable = PathDefinitions.PIP_EXE,
+                aCommand = arrayOf("install", aWheelFilepath)
+            )
+            return true
         }
         catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")

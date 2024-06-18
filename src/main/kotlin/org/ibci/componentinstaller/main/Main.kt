@@ -53,14 +53,33 @@ fun main() = application {
         fileLogger.append(LogLevel.CRITICAL, "The exception ${ex} occurred. The program has to exit.")
         return@application
     }
-    fileLogger.append(LogLevel.INFO, "Starting application ...")
-    val tmpWindowState = rememberWindowState(width = 650.dp, height = 750.dp)
-    Window(
-        title = "PySSA-Installer",
-        state = tmpWindowState,
-        icon = painterResource("assets/installer_24_dpi.png"),
-        onCloseRequest = ::exitApplication
-    ) {
-        App(MainWindowController())
+    if (args.isEmpty()) {
+        // Launch GUI
+        tmpFileLogger.append(LogLevel.INFO, "Starting GUI ...")
+        launchGui()
+    } else {
+        // Handle CLI
+        tmpFileLogger.append(LogLevel.INFO, "Starting CLI ...")
+        launchCli(args)
     }
+}
+
+fun launchGui() {
+    application {
+        val fileLogger = FileLogger()
+        fileLogger.append(LogLevel.INFO, "Starting application ...")
+        val tmpWindowState = rememberWindowState(width = 650.dp, height = 750.dp)
+        Window(
+            title = "PySSA-Installer",
+            state = tmpWindowState,
+            icon = painterResource("installer_24_dpi.png"),
+            onCloseRequest = ::exitApplication
+        ) {
+            App(MainWindowController())
+        }
+    }
+}
+
+fun launchCli(args: Array<String>) {
+    println("Hello from the CLI!")
 }
