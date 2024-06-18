@@ -28,6 +28,7 @@ import org.ibci.componentinstaller.gui.DialogType
 import org.ibci.componentinstaller.gui.GuiDefinitions
 import org.ibci.componentinstaller.main.MainWindowController
 import org.ibci.componentinstaller.model.components.IComponent
+import org.ibci.componentinstaller.model.util.CustomProcessBuilder
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
 
 /**
@@ -192,9 +193,12 @@ object ComposableCollection {
                                     .background(MaterialTheme.colors.surface)
                                     .border(1.dp, Color.LightGray, shape = RoundedCornerShape(4.dp))
                             ) {
-                                if (isInstalled.value && !anIsJobRunningState.value) {
+                                if (isInstalled.value && !anIsJobRunningState.value && aComponent.componentInfo.installationLocation != "") {
                                     LowLevelComposable.standardDropdownMenuItem(
-                                        onClickFunction = { /* Handle this */},
+                                        onClickFunction = {
+                                            val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
+                                            tmpCustomProcessBuilder.runCommand(arrayOf("/C", "explorer.exe", aComponent.componentInfo.installationLocation))
+                                        },
                                         aText = "Open Install Location"
                                     )
                                 }

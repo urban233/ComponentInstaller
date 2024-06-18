@@ -11,6 +11,7 @@ import org.ibci.componentinstaller.util.logger.FileLogger
 import org.ibci.componentinstaller.util.logger.LogLevel
 
 import java.io.File
+import java.net.InetAddress
 import java.nio.file.AccessDeniedException
 import java.nio.file.Paths
 import java.util.zip.ZipFile
@@ -39,7 +40,7 @@ class PyssaComponent: IComponent {
      *
      */
     override val localVersion: KotlinVersion
-        get() = KotlinVersion(-1, 0, 0)
+        get() = KotlinVersion(1, 0, 0)
 
     /**
      * The remote component version
@@ -47,7 +48,7 @@ class PyssaComponent: IComponent {
      *
      */
     override val remoteVersion: KotlinVersion
-        get() = KotlinVersion(-1, 0, 0)
+        get() = KotlinVersion(1, 0, 0)
 
     /**
      * Information about the component
@@ -55,7 +56,8 @@ class PyssaComponent: IComponent {
     override val componentInfo: ComponentInfo
         get() = ComponentInfo(
             aComponentLogoResourceFilepath = "component_logos/pyssa_96_dpi.png",
-            aComponentDescription = "An easy-to-use protein structure research tool"
+            aComponentDescription = "An easy-to-use protein structure research tool",
+            anInstallationLocation = PathDefinitions.PYSSA_PROGRAM_DIR
         )
 
     /**
@@ -76,17 +78,49 @@ class PyssaComponent: IComponent {
      * @return True if component is successfully installed, false: Otherwise
      */
     override fun install(): Boolean {
-        // First installer prototype has only an online version, therefore no offline package is needed but an internet connection
+        // First installer prototype has only an online version, therefore no offline package is needed but an internet connection!
         try {
-            downloadWindowsPackage()
-            val tmpDownloadSuccessful: Boolean = downloadWindowsPackage()
-            if (tmpDownloadSuccessful) {
-                copyWindowsPackage()
+            val tmpHasInternet: Boolean = isInternetAvailable()
+            if (tmpHasInternet) {
+                if (!downloadWindowsPackage()) {
+                    return false
+                }
+            } else {
+                if (!copyWindowsPackage()) {
+                    return false
+                }
             }
-            installPyssa()
+            if (!unzipWindowsPackage()) {
+                return false
+            }
+            if (!createWindowsShortcuts()) {
+                return false
+            }
+            if (!setupPythonEnvironment()) {
+                return false
+            }
+            if (!postInstallCleanup()) {
+                return false
+            }
             return true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")
+            return false
+        }
+    }
+
+    /**
+     * Check if internet connection is available
+     *
+     * @return True if component is successfully installed, false: Otherwise
+     */
+    // TODO: Check, if it works!
+    fun isInternetAvailable(): Boolean {
+        try {
+            val address: InetAddress = InetAddress.getByName("www.google.com")
+            !address.equals("")
+            return true
+        } catch (e: Exception) {
             return false
         }
     }
@@ -97,13 +131,13 @@ class PyssaComponent: IComponent {
      *
      * @return True if operation is successful, false: Otherwise
      */
-    fun downloadWindowsPackage(): Boolean {
+    private fun downloadWindowsPackage(): Boolean {
         // Create program dir under ProgramData
         if (!File(PathDefinitions.PYSSA_PROGRAM_DIR).exists()) {
             File(PathDefinitions.PYSSA_PROGRAM_DIR).mkdirs()
         }
         // Download windows pyssa package
-        if (!Io.downloadFile(UrlDefinitions.PYSSA_WINDOWS_PACKAGE, "${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip")) {
+        if (!Io.downloadFile(UrlDefinitions.PYSSA_WINDOWS_PACKAGE, "${PathDefinitions.PYSSA_PROGRAM_DIR}\\windows_package.zip")) {
             fileLogger.append(LogLevel.ERROR, "The windows_package.zip could not be downloaded!")
             return false
         }
@@ -111,11 +145,11 @@ class PyssaComponent: IComponent {
     }
 
     /**
-     * Copy the offline windows package for PySSA.
+     * Copy the Windows package for PySSA.
      *
      * @return True if operation is successful, false: Otherwise
      */
-    fun copyWindowsPackage(): Boolean {
+    private fun copyWindowsPackage(): Boolean {
         try {
             // Create program dir under ProgramData
             val tmpProgramDir: File = File(PathDefinitions.PYSSA_PROGRAM_DIR)
@@ -136,38 +170,13 @@ class PyssaComponent: IComponent {
     }
     //</editor-fold>
 
-    /**
-     * Installs PySSA
-     *
-     * @return True if operation is successful, false: Otherwise
-     */
-    fun installPyssa(): Boolean {
-        if (!File("${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip").exists()) {
-            fileLogger.append(LogLevel.ERROR, "The windows_package.zip could not be found.")
-            return false
-        }
-        if (!unzipWindowsPackage()) {
-            return false
-        }
-        if (!createWindowsShortcuts()) {
-            return false
-        }
-        if (!setupPythonEnvironment()) {
-            return false
-        }
-        if (!postInstallCleanup()) {
-            return false
-        }
-        return true
-    }
-
-    //<editor-fold desc="Helper methods for installPySSA()">
+    //<editor-fold desc="Helper methods for install()">
     /**
      * Unzips the windows_package.zip file to the specified directory
      *
      * @return True if operation is successful, false: Otherwise
      */
-    fun unzipWindowsPackage(): Boolean {
+    private fun unzipWindowsPackage(): Boolean {
         val tmpZipFilePath: String = "${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip"
         val tmpExtractPath: String = PathDefinitions.PYSSA_PROGRAM_DIR
 
@@ -211,7 +220,7 @@ class PyssaComponent: IComponent {
      *
      * @return True if operation is successful, false: Otherwise
      */
-    fun createWindowsShortcuts(): Boolean {
+    private fun createWindowsShortcuts(): Boolean {
         try {
             val tmpSystemEntryHandler: SystemEntryHandler = SystemEntryHandler()
             tmpSystemEntryHandler.createShortcuts()
@@ -227,20 +236,40 @@ class PyssaComponent: IComponent {
      *
      * @return True if operation is successful, false: Otherwise
      */
-    fun setupPythonEnvironment(): Boolean {
+    private fun setupPythonEnvironment(): Boolean {
         try {
             val tmpPythonHelper: PythonHelper = PythonHelper()
             if (!tmpPythonHelper.setupVenv()) {
                 fileLogger.append(LogLevel.ERROR, "Could not setup Python with .venv.")
                 return false
             }
-            if (!tmpPythonHelper.pipWheelInstall("${PathDefinitions.PYSSA_PROGRAM_DIR}/Pmw-2.1.1.tar.gz")) {
+            if (!tmpPythonHelper.pipWheelInstall("${PathDefinitions.PYSSA_PROGRAM_DIR}\\Pmw-2.1.1.tar.gz")) {
                 fileLogger.append(LogLevel.ERROR, "Could not install Pmw.")
                 return false
             }
-            if (!tmpPythonHelper.pipWheelInstall("${PathDefinitions.PYSSA_PROGRAM_DIR}/pymol-3.0.0-cp311-cp311-win_amd64.whl")) {
+            if (!tmpPythonHelper.pipWheelInstall("${PathDefinitions.PYSSA_PROGRAM_DIR}\\pymol-3.0.0-cp311-cp311-win_amd64.whl")) {
                 fileLogger.append(LogLevel.ERROR, "Could not install PyMOL.")
                 return false
+            }
+            return true
+        } catch (ex: Exception) {
+            fileLogger.append(LogLevel.ERROR, "$ex")
+            return false
+        }
+    }
+
+    /**
+     * Cleans files when the installation is complete
+     *
+     * @return True if operation is successful, false: Otherwise
+     */
+    private fun postInstallCleanup(): Boolean {
+        try {
+            File("${PathDefinitions.PYSSA_PROGRAM_DIR}\\Pmw-2.1.1.tar.gz").deleteRecursively()
+            File("${PathDefinitions.PYSSA_PROGRAM_DIR}\\pymol-3.0.0-cp311-cp311-win_amd64.whl").deleteRecursively()
+            val tmpSetupPythonPath: File = File("${PathDefinitions.PYSSA_PROGRAM_BIN_DIR}\\setup_python_for_pyssa")
+            if (tmpSetupPythonPath.exists()) {
+                tmpSetupPythonPath.deleteRecursively()
             }
             return true
         } catch (ex: Exception) {
@@ -296,26 +325,6 @@ class PyssaComponent: IComponent {
             return false
         }
     }
-
-    /**
-     * Cleans files when the installation is complete
-     *
-     * @return True if operation is successful, false: Otherwise
-     */
-    fun postInstallCleanup(): Boolean {
-        try {
-            File("${PathDefinitions.PYSSA_PROGRAM_DIR}\\Pmw-2.1.1.tar.gz").deleteRecursively()
-            File("${PathDefinitions.PYSSA_PROGRAM_DIR}\\pymol-3.0.0-cp311-cp311-win_amd64.whl").deleteRecursively()
-            val tmpSetupPythonPath: File = Paths.get("${PathDefinitions.PYSSA_PROGRAM_BIN_DIR}\\setup_python_for_pyssa").toFile()
-            if (tmpSetupPythonPath.exists()) {
-                tmpSetupPythonPath.deleteRecursively()
-            }
-            return true
-        } catch (ex: Exception) {
-            fileLogger.append(LogLevel.ERROR, "$ex")
-            return false
-        }
-    }
     //</editor-fold>
     //</editor-fold>
 
@@ -332,7 +341,7 @@ class PyssaComponent: IComponent {
             File(PathDefinitions.PYSSA_PROGRAM_DIR).deleteRecursively()
             return true
         } catch (ex: AccessDeniedException) {
-            fileLogger.append(LogLevel.ERROR, "$ex")
+            fileLogger.append(LogLevel.ERROR, "There is a filesystem access violation. See this: $ex")
             return false
         } catch (ex: Exception) {
             // Error occurred during one of the function calls, therefore return false
@@ -340,32 +349,6 @@ class PyssaComponent: IComponent {
             return false
         }
     }
-
-//    /**
-//     * Makes a cleanup after the installation of PySSA
-//     *
-//     * @return Empty string if cleanup is successful, otherwise: Exception message
-//     */
-//     fixme: Why should be the return type a string?
-//    fun pyssaInstallationCleanup(): String {
-//        SystemEntryHandler.removeShortcut(Environment.SpecialFolder.DesktopDirectory, "PyMOL-PySSA")
-//        SystemEntryHandler.removeShortcut(Environment.SpecialFolder.StartMenu, "PyMOL-PySSA")
-//        if (File(PathDefinitions.PYSSA_PROGRAM_DIR).exists()) {
-//            try {
-//                File(PathDefinitions.PYSSA_PROGRAM_DIR).deleteRecursively()
-//            }
-//            catch (ex: AccessDeniedException) {
-//                fileLogger.append(LogLevel.WARNING, "$ex")
-//                return "AccessDeniedExceptionxception: Unable to delete C:\\ProgramData\\pyssa directory."
-//            }
-//            catch (ex: Exception) {
-//                // Error occurred during one of the function calls, return the exception message
-//                fileLogger.append(LogLevel.ERROR, "$ex")
-//                return ex.message ?: ""
-//            }
-//        }
-//        return ""
-//    }
 
     /**
      * Removes the .pyssa directory from the user directory
@@ -395,7 +378,6 @@ class PyssaComponent: IComponent {
      * @return True if component is successfully updated, false: Otherwise
      */
     override fun update(): Boolean {
-        // fixme: Do you mean that as a wrap function with if statements?
         try {
             if (checkPrerequisitesForUninstallation()) {
                 uninstall()
@@ -410,38 +392,39 @@ class PyssaComponent: IComponent {
         }
     }
 
-    /**
-     * Updates only the sources of PySSA
-     *
-     * @return True if component is successfully updated, false: Otherwise
-     */
-    fun updatePyssaSrc(): Boolean {
-        try {
-            File(PathDefinitions.PYSSA_RICH_CLIENT_DIR).deleteRecursively()
-        }
-        catch (ex: AccessDeniedException) {
-            fileLogger.append(LogLevel.ERROR, "Error occurred during the delete process of the PySSA plugin path: $ex")
-            return false
-        }
-        catch (ex: Exception) {
-            // Error occurred during one of the function calls, return false
-            return false
-        }
-
-        var tmpReturnCode = downloadWindowsPackage()
-        if (!tmpReturnCode) {
-            return false
-        }
-        tmpReturnCode = unzipWindowsPackage()
-        if (!tmpReturnCode) {
-            return false
-        }
-        tmpReturnCode = unzipPyssaPluginSrc()
-        if (!tmpReturnCode) {
-            return false
-        }
-        return true
-    }
+//    /**
+//     * Updates only the sources of PySSA
+//     *
+//     * @return True if component is successfully updated, false: Otherwise
+//     */
+//    fun updatePyssaSrc(): Boolean {
+//        // Might be outdated
+//        try {
+//            File(PathDefinitions.PYSSA_RICH_CLIENT_DIR).deleteRecursively()
+//        }
+//        catch (ex: AccessDeniedException) {
+//            fileLogger.append(LogLevel.ERROR, "Error occurred during the delete process of the PySSA plugin path: $ex")
+//            return false
+//        }
+//        catch (ex: Exception) {
+//            // Error occurred during one of the function calls, return false
+//            return false
+//        }
+//
+//        var tmpReturnCode = downloadWindowsPackage()
+//        if (!tmpReturnCode) {
+//            return false
+//        }
+//        tmpReturnCode = unzipWindowsPackage()
+//        if (!tmpReturnCode) {
+//            return false
+//        }
+//        tmpReturnCode = unzipPyssaPluginSrc()
+//        if (!tmpReturnCode) {
+//            return false
+//        }
+//        return true
+//    }
 
     /**
      * Checks if the component is installed
@@ -449,7 +432,7 @@ class PyssaComponent: IComponent {
      * @return True if component is installed, false: Otherwise
      */
     override fun isInstalled(): Boolean {
-        TODO("Not yet implemented")
+        return File(PathDefinitions.PYSSA_WINDOW_ARRANGEMENT_EXE).exists()
     }
 
     /**
@@ -458,7 +441,8 @@ class PyssaComponent: IComponent {
      * @return True if component has update, false: Otherwise
      */
     override fun hasUpdate(): Boolean {
-        TODO("Not yet implemented")
+        // TODO: This is done in the latest commit (true is only a placeholder)
+        return true
     }
 
     /**
@@ -467,7 +451,13 @@ class PyssaComponent: IComponent {
      * @return True if component can be installed, false: Otherwise
      */
     override fun checkPrerequisitesForInstallation(): Boolean {
-        TODO("Not yet implemented")
+        val tmpColabfoldComponent: ColabFoldComponent = ColabFoldComponent()
+        val tmpWslComponent: WslComponent = WslComponent()
+        if (tmpWslComponent.isInstalled() && tmpColabfoldComponent.isInstalled()) {
+            return true
+        } else {
+            return false
+        }
     }
 
     /**
@@ -476,7 +466,13 @@ class PyssaComponent: IComponent {
      * @return True if component can be uninstalled, false: Otherwise
      */
     override fun checkPrerequisitesForUninstallation(): Boolean {
-        TODO("Not yet implemented")
+        val tmpColabfoldComponent: ColabFoldComponent = ColabFoldComponent()
+        val tmpWslComponent: WslComponent = WslComponent()
+        if (tmpWslComponent.isInstalled() && tmpColabfoldComponent.isInstalled()) {
+            return true
+        } else {
+            return false
+        }
     }
     //</editor-fold>
 }
