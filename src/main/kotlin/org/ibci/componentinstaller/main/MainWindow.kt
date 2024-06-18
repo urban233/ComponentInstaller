@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.ibci.componentinstaller.gui.composables.ComposableCollection
 import org.ibci.componentinstaller.gui.composables.LowLevelComposable
+import org.ibci.componentinstaller.model.components.ColabFoldComponent
 import org.ibci.componentinstaller.model.components.ExampleComponent
 import org.ibci.componentinstaller.model.components.PyssaComponent
 import org.ibci.componentinstaller.model.components.WslComponent
@@ -28,7 +29,7 @@ fun MainWindow(aController: MainWindowController) {
     val scrollState = rememberScrollState()
     val components = remember { mutableStateListOf(
         WslComponent(),
-        ExampleComponent("ColabFold"),
+        ColabFoldComponent(),
         PyssaComponent()
     ) }
     val isInstalledExpanded = remember { mutableStateOf(true) }

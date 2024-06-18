@@ -42,7 +42,8 @@ class ExampleComponent(aName: String) : IComponent {
     override val componentInfo: ComponentInfo
         get() = ComponentInfo(
             aComponentLogoResourceFilepath = "component_logos/colabfold_96_dpi.png",
-            aComponentDescription = "A tool that could be useful"
+            aComponentDescription = "A tool that could be useful",
+            anInstallationLocation = ""
         )
 
     /**

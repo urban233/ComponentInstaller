@@ -33,6 +33,10 @@ object PathDefinitions {
      */
     const val LOCAL_COLABFOLD_DIR: String = "C:\\ProgramData\\localcolabfold"
     /**
+     * Filepath of the storage file for the almalinux distro
+     */
+    const val LOCAL_COLABFOLD_STORAGE_VDHX: String = "${LOCAL_COLABFOLD_DIR}\\storage\\ext4.vhdx"
+    /**
      * Filepath of the checkWsl batch script
      */
     const val CHECK_WSL_BAT: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\scripts\\checkWsl.bat"
