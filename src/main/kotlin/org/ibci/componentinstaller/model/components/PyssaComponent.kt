@@ -11,6 +11,7 @@ import org.ibci.componentinstaller.util.logger.FileLogger
 import org.ibci.componentinstaller.util.logger.LogLevel
 
 import java.io.File
+import java.net.InetAddress
 import java.nio.file.AccessDeniedException
 import java.nio.file.Paths
 import java.util.zip.ZipFile
@@ -79,7 +80,7 @@ class PyssaComponent: IComponent {
     override fun install(): Boolean {
         // First installer prototype has only an online version, therefore no offline package is needed but an internet connection!
         try {
-            val tmpHasInternet: Boolean = true // TODO: Here needs the internet check to happen
+            val tmpHasInternet: Boolean = isInternetAvailable()
             if (tmpHasInternet) {
                 if (!downloadWindowsPackage()) {
                     return false
@@ -104,6 +105,22 @@ class PyssaComponent: IComponent {
             return true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")
+            return false
+        }
+    }
+
+    /**
+     * Check if internet connection is available
+     *
+     * @return True if component is successfully installed, false: Otherwise
+     */
+    // TODO: Check, if it works!
+    fun isInternetAvailable(): Boolean {
+        try {
+            val address: InetAddress = InetAddress.getByName("www.google.com")
+            !address.equals("")
+            return true
+        } catch (e: Exception) {
             return false
         }
     }
