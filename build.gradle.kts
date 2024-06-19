@@ -29,6 +29,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.5")
     implementation("net.java.dev.jna:jna:5.8.0")
     implementation("net.java.dev.jna:jna-platform:5.8.0")
+    implementation("org.zeromq:jeromq:0.6.0")
 }
 
 compose.desktop {
