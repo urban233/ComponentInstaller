@@ -3,6 +3,8 @@ package org.ibci.componentinstaller.model.components
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Path
+import kotlinx.coroutines.Job
+import org.ibci.componentinstaller.gui.ComponentState
 import org.ibci.componentinstaller.model.util.CustomProcessBuilder
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
 import org.ibci.componentinstaller.model.util.definitions.PathDefinitions
@@ -45,6 +47,15 @@ class WslComponent : IComponent {
             aComponentDescription = "Enables running a Linux kernel inside a lightweight virtual machine",
             anInstallationLocation = ""
         )
+
+    override var states: MutableState<ComponentState> = mutableStateOf(
+        ComponentState(
+            isInstalled(),
+            hasUpdate(),
+            Job(),
+            false
+        )
+    )
 
     /**
      * The installation state
@@ -139,8 +150,7 @@ class WslComponent : IComponent {
      */
     override fun hasUpdate(): Boolean {
         // The update is handled by the OS, therefore the state is always false
-        updatableState.value = false
-        return updatableState.value
+        return false
     }
 
     /**
@@ -151,7 +161,7 @@ class WslComponent : IComponent {
     override fun checkPrerequisitesForInstallation(): Boolean {
         val tmpColabfoldComponent: ColabFoldComponent = ColabFoldComponent()
         val tmpPyssaComponent: PyssaComponent = PyssaComponent()
-        if (!tmpPyssaComponent.isInstalled() && !tmpColabfoldComponent.isInstalled()) {
+        if (!tmpPyssaComponent.states.component1().isInstalled && !tmpColabfoldComponent.states.component1().isInstalled) {
             return true
         } else {
             return false

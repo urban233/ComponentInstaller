@@ -1,6 +1,9 @@
 package org.ibci.componentinstaller.model.components
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import kotlinx.coroutines.Job
+import org.ibci.componentinstaller.gui.ComponentState
 import org.ibci.componentinstaller.util.logger.FileLogger
 import org.ibci.componentinstaller.util.logger.LogLevel
 import java.io.File
@@ -45,6 +48,15 @@ class ExampleComponent(aName: String) : IComponent {
             aComponentDescription = "A tool that could be useful",
             anInstallationLocation = ""
         )
+
+    override var states: MutableState<ComponentState> = mutableStateOf(
+        ComponentState(
+            isInstalled(),
+            hasUpdate(),
+            Job(),
+            false
+        )
+    )
 
     /**
      * The installation state

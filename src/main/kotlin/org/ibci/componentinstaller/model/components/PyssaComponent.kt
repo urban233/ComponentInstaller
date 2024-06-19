@@ -1,6 +1,9 @@
 package org.ibci.componentinstaller.model.components
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import kotlinx.coroutines.Job
+import org.ibci.componentinstaller.gui.ComponentState
 import org.ibci.componentinstaller.model.util.*
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
 import org.ibci.componentinstaller.model.util.definitions.PathDefinitions
@@ -56,6 +59,15 @@ class PyssaComponent: IComponent {
             aComponentLogoResourceFilepath = "assets/component_logos/pyssa_96_dpi.png",
             aComponentDescription = "An easy-to-use protein structure research tool",
             anInstallationLocation = PathDefinitions.PYSSA_PROGRAM_DIR
+        )
+
+    override var states: MutableState<ComponentState> = mutableStateOf(
+            ComponentState(
+                isInstalled(),
+                hasUpdate(),
+                Job(),
+                false
+            )
         )
 
     /**
@@ -459,7 +471,7 @@ class PyssaComponent: IComponent {
     override fun checkPrerequisitesForInstallation(): Boolean {
         val tmpColabfoldComponent: ColabFoldComponent = ColabFoldComponent()
         val tmpWslComponent: WslComponent = WslComponent()
-        if (tmpWslComponent.isInstalled() && tmpColabfoldComponent.isInstalled()) {
+        if (tmpWslComponent.states.component1().isInstalled && tmpColabfoldComponent.states.component1().isInstalled) {
             return true
         } else {
             return false
@@ -474,7 +486,7 @@ class PyssaComponent: IComponent {
     override fun checkPrerequisitesForUninstallation(): Boolean {
         val tmpColabfoldComponent: ColabFoldComponent = ColabFoldComponent()
         val tmpWslComponent: WslComponent = WslComponent()
-        if (tmpWslComponent.isInstalled() && tmpColabfoldComponent.isInstalled()) {
+        if (tmpWslComponent.states.component1().isInstalled && tmpColabfoldComponent.states.component1().isInstalled) {
             return true
         } else {
             return false

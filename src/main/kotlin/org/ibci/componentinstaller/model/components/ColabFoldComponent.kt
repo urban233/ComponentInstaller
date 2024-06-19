@@ -1,6 +1,9 @@
 package org.ibci.componentinstaller.model.components
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import kotlinx.coroutines.Job
+import org.ibci.componentinstaller.gui.ComponentState
 import org.ibci.componentinstaller.model.util.CustomProcessBuilder
 import org.ibci.componentinstaller.model.util.Io.downloadFile
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
@@ -54,6 +57,15 @@ class ColabFoldComponent: IComponent {
             aComponentDescription = "An faster AlphaFold protein structure prediction tool",
             anInstallationLocation = PathDefinitions.LOCAL_COLABFOLD_DIR
         )
+
+    override var states: MutableState<ComponentState> = mutableStateOf(
+        ComponentState(
+            isInstalled(),
+            hasUpdate(),
+            Job(),
+            false
+        )
+    )
 
     /**
      * The installation state
@@ -178,7 +190,7 @@ class ColabFoldComponent: IComponent {
     override fun checkPrerequisitesForInstallation(): Boolean {
         val tmpWslComponent: WslComponent = WslComponent()
         val tmpPyssaComponent: PyssaComponent = PyssaComponent()
-        if (!tmpPyssaComponent.isInstalled() && tmpWslComponent.isInstalled()) {
+        if (!tmpPyssaComponent.states.component1().isInstalled && tmpWslComponent.states.component1().isInstalled) {
             return true
         } else {
             return false
@@ -193,7 +205,7 @@ class ColabFoldComponent: IComponent {
     override fun checkPrerequisitesForUninstallation(): Boolean {
         val tmpWslComponent: WslComponent = WslComponent()
         val tmpPyssaComponent: PyssaComponent = PyssaComponent()
-        if (!tmpPyssaComponent.isInstalled() && tmpWslComponent.isInstalled()) {
+        if (!tmpPyssaComponent.states.component1().isInstalled && tmpWslComponent.states.component1().isInstalled) {
             return true
         } else {
             return false
