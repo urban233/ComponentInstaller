@@ -24,12 +24,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.*
+import org.ibci.componentinstaller.gui.ComponentState
 import org.ibci.componentinstaller.gui.DialogType
 import org.ibci.componentinstaller.gui.GuiDefinitions
 import org.ibci.componentinstaller.main.MainWindowController
 import org.ibci.componentinstaller.model.components.IComponent
 import org.ibci.componentinstaller.model.util.CustomProcessBuilder
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
+import org.ibci.componentinstaller.util.logger.FileLogger
+import org.ibci.componentinstaller.util.logger.LogLevel
 
 /**
  * Object for storing high-level composable functions
@@ -62,6 +65,208 @@ object ComposableCollection {
                 aFontWeight = FontWeight.SemiBold,
             )
         }
+    }
+
+    @Composable
+    fun componentItem(
+        aComponent: IComponent
+    ) {
+        val tmpFileLogger = FileLogger()
+        tmpFileLogger.append(LogLevel.DEBUG, "Running componentItem for ${aComponent.name}")
+        val interactionSource = remember { MutableInteractionSource() }
+        val isHovered by interactionSource.collectIsHoveredAsState()
+        val moreOptionsExpanded = remember { mutableStateOf(false) }
+        Row(
+            modifier = Modifier
+                .background(if (isHovered) GuiDefinitions.COMPONENT_HOVER_BACKGROUND_COLOR else GuiDefinitions.COMPONENT_BACKGROUND_COLOR, shape = MaterialTheme.shapes.medium)
+                .hoverable(interactionSource = interactionSource)
+        ) {
+            LowLevelComposable.componentLogo(aComponent.componentInfo.componentLogoResourceFilepath)
+            Row (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.padding(vertical = 12.dp)) {
+                    Row {
+                        LowLevelComposable.componentNameText(aComponent.name)
+                        Spacer(modifier = Modifier.weight(1f)) // Spacer to push button to the right
+                        componentActions(aComponent, moreOptionsExpanded)
+                    }
+                    Column {
+                        componentInformation(aComponent)
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun componentActions(aComponent: IComponent, moreOptionsExpanded: MutableState<Boolean>) {
+        val tmpFileLogger = FileLogger()
+        tmpFileLogger.append(LogLevel.DEBUG, "Runs component()")
+        if (aComponent.states.component1().isInstalled) {
+            // Component is installed
+            if (aComponent.states.component1().isUpdatable) {
+                // Component has an update available
+                LowLevelComposable.standardButton(
+                    onClickFunction = { },
+                    aText = "Update",
+                    isEnabled = false // Needs its own state
+                )
+            }
+        } else {
+            // Component is not installed
+            LowLevelComposable.outlinedStandardButton(
+                onClickFunction = { },
+                aText = "Install",
+                isEnabled = true
+            )
+        }
+        Box {
+            IconButton(
+                onClick = { moreOptionsExpanded.value = !moreOptionsExpanded.value },
+                modifier = Modifier
+                    .width(48.dp)
+                    .height(24.dp)
+                    .fillMaxWidth()
+                    .pointerHoverIcon(PointerIcon.Hand),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "More Options",
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(24.dp),
+                )
+            }
+            if (moreOptionsExpanded.value) {
+                moreOptionsMenu(aComponent, moreOptionsExpanded)
+            }
+        }
+    }
+
+    @Composable
+    fun moreOptionsMenu(aComponent: IComponent, moreOptionsExpanded: MutableState<Boolean>) {
+        DropdownMenu(
+            expanded = moreOptionsExpanded.value,
+            onDismissRequest = { moreOptionsExpanded.value = false },
+            modifier = Modifier
+                .width(200.dp)
+                .background(MaterialTheme.colors.surface)
+                .border(1.dp, Color.LightGray, shape = RoundedCornerShape(4.dp))
+        ) {
+            if (aComponent.states.component1().isInstalled && aComponent.componentInfo.installationLocation != "") {
+                LowLevelComposable.standardDropdownMenuItem(
+                    onClickFunction = { openWindowsExplorer(aComponent.componentInfo.installationLocation) },
+                    aText = "Open Install Location"
+                )
+            }
+            if (aComponent.states.component1().isInstalled && aComponent.checkPrerequisitesForUninstallation()) {
+                LowLevelComposable.standardDropdownMenuItem(
+                    onClickFunction = { },
+                    aText = "Uninstall",
+                    aFontColor = GuiDefinitions.COMPONENT_UNINSTALL_COLOR
+                )
+            }
+            LowLevelComposable.standardDropdownMenuItem(
+                onClickFunction = { }, aText = "About"
+            )
+        }
+    }
+
+    @Composable
+    fun componentInformation(aComponent: IComponent) {
+        // Shows a component description
+        LowLevelComposable.standardText(
+            aText = aComponent.componentInfo.componentDescription
+        )
+        if (aComponent.states.component1().isInstalled) {
+            // Component is installed
+            LowLevelComposable.standardText(aText = aComponent.localVersion.toString())
+            if (aComponent.states.component1().isUpdatable) {
+                // Component has an update available
+                Row (
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 6.dp)
+                ) {
+                    Icon (
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Update info icon",
+                        tint = GuiDefinitions.COMPONENT_INFO_ICON_COLOR,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    LowLevelComposable.standardText(
+                        aText = "Update available!",
+                        aFontSize = 13.sp,
+                        aFontColor = Color.Black,
+                        aFontWeight = FontWeight.SemiBold,
+                        aModifier = Modifier
+                            .padding(bottom = 4.dp)
+                            .padding(horizontal = 4.dp)
+                    )
+                }
+                // Shows new version number
+                LowLevelComposable.standardText(
+                    aText = aComponent.remoteVersion.toString()
+                )
+            }
+        }
+        if (aComponent.states.component1().isComponentJobRunning) {
+            //<editor-fold desc="Progress indicator">
+            /*
+             * Describes the progress indication with text, progress bar and cancel button
+             */
+            Column {
+                // Container for the text and cancel button
+                Row (verticalAlignment = Alignment.CenterVertically) {
+                    // Progress description
+                    LowLevelComposable.standardText(
+                        aText = "test" //progressDescription.value
+                    )
+                    Spacer(modifier = Modifier.weight(1f)) // Spacer to push button to the right
+                    // Cancel button
+                    TextButton(
+                        onClick = { },
+                        enabled = aComponent.states.component1().componentJob.isActive == true,
+                        modifier = Modifier
+                            .width(100.dp)
+                            .height(24.dp)
+                            .fillMaxWidth()
+                            .pointerHoverIcon(PointerIcon.Hand),
+                        contentPadding = PaddingValues(0.dp),
+                    ) {
+                        LowLevelComposable.textForButton(
+                            aText = "Cancel",
+                            aColor = GuiDefinitions.PYSSA_BLUE_COLOR,
+                            aFontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+                // Progress bar
+                LinearProgressIndicator(
+                    color = GuiDefinitions.PYSSA_BLUE_COLOR,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 6.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                )
+            }
+            //</editor-fold>
+        }
+    }
+
+    fun openWindowsExplorer(anInstallationLocation: String) {
+        val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
+        tmpCustomProcessBuilder.runCommand(
+            arrayOf(
+                "/C",
+                "explorer.exe",
+                anInstallationLocation
+            )
+        )
     }
 
     /**

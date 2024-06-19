@@ -47,31 +47,41 @@ fun MainWindow(aController: MainWindowController) {
             expandedState = isInstalledExpanded,
             addComponents = {
                 for (tmpComponent in components) {
-                    if (tmpComponent.isInstalled()) {
-                        ComposableCollection.ComponentItem(
-                            aComponent = tmpComponent,
-                            aController = aController,
-                            anIsJobRunningState = isJobRunning
-                        )
-                    }
+                    ComposableCollection.componentItem(tmpComponent)
                 }
             }
         )
-        ExpandableSection(
-            title = "Available",
-            expandedState = isAvailableExpanded,
-            addComponents = {
-                for (tmpComponent in components) {
-                    if (!tmpComponent.isInstalled()) {
-                        ComposableCollection.ComponentItem(
-                            aComponent = tmpComponent,
-                            aController = aController,
-                            anIsJobRunningState = isJobRunning
-                        )
-                    }
-                }
-            }
-        )
+
+//        ExpandableSection(
+//            title = "Installed",
+//            expandedState = isInstalledExpanded,
+//            addComponents = {
+//                for (tmpComponent in components) {
+//                    if (tmpComponent.isInstalled()) {
+//                        ComposableCollection.ComponentItem(
+//                            aComponent = tmpComponent,
+//                            aController = aController,
+//                            anIsJobRunningState = isJobRunning
+//                        )
+//                    }
+//                }
+//            }
+//        )
+//        ExpandableSection(
+//            title = "Available",
+//            expandedState = isAvailableExpanded,
+//            addComponents = {
+//                for (tmpComponent in components) {
+//                    if (!tmpComponent.isInstalled()) {
+//                        ComposableCollection.ComponentItem(
+//                            aComponent = tmpComponent,
+//                            aController = aController,
+//                            anIsJobRunningState = isJobRunning
+//                        )
+//                    }
+//                }
+//            }
+//        )
     }
 }
 

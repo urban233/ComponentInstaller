@@ -2,6 +2,7 @@ package org.ibci.componentinstaller.model.components
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import org.ibci.componentinstaller.gui.ComponentState
 
 /**
  * Interface for components
@@ -42,6 +43,11 @@ interface IComponent {
      * This should be seen as a private property, therefore the leading underscore.
      */
     var updatableState: MutableState<Boolean>
+
+    /**
+     * All states related to the component
+     */
+    var states: MutableState<ComponentState>
     //</editor-fold>
 
     /**
