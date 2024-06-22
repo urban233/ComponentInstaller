@@ -3,8 +3,8 @@ package org.ibci.componentinstaller.gui
 import kotlinx.coroutines.Job
 
 data class ComponentState (
-    val isInstalled: Boolean,
+    var isInstalled: Boolean,
     val isUpdatable: Boolean,
-    val componentJob: Job,
-    val isComponentJobRunning: Boolean,
+    var componentJob: Job,
+    var isComponentJobRunning: Boolean,
 )

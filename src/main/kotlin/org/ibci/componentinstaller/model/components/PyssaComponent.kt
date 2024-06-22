@@ -62,13 +62,13 @@ class PyssaComponent: IComponent {
         )
 
     override var states: MutableState<ComponentState> = mutableStateOf(
-            ComponentState(
-                isInstalled(),
-                hasUpdate(),
-                Job(),
-                false
-            )
+        ComponentState(
+            isInstalled(),
+            hasUpdate(),
+            Job(),
+            false
         )
+    )
 
     /**
      * The installation state
@@ -187,7 +187,7 @@ class PyssaComponent: IComponent {
      * @return True if operation is successful, false: Otherwise
      */
     private fun unzipWindowsPackage(): Boolean {
-        val tmpZipFilePath: String = "${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip"
+        val tmpZipFilePath: String = "${PathDefinitions.PYSSA_PROGRAM_DIR}\\windows_package.zip"
         val tmpExtractPath: String = PathDefinitions.PYSSA_PROGRAM_DIR
 
         // Ensure the zip archive exists
@@ -195,6 +195,9 @@ class PyssaComponent: IComponent {
             fileLogger.append(LogLevel.ERROR, "The windows_package.zip file is missing! Exit installation process now.")
             return false
         }
+
+        val tmpCustomProcessBuilder = CustomProcessBuilder()
+        tmpCustomProcessBuilder.runCommand(arrayOf("powershell -ExecutionPolicy Bypass -Command Expand-Archive -Path 'C:\\ProgramData\\IBCI\\PySSA\\windows_package.zip' -DestinationPath C:\\ProgramData\\IBCI\\PySSA\\output"))
 
         // Unzip the archive
         try {
