@@ -41,19 +41,18 @@ class WslComponent : IComponent {
     /**
      * Information about the component
      */
-    override val componentInfo: ComponentInfo
-        get() = ComponentInfo(
-            aComponentLogoResourceFilepath = "assets/component_logos/wsl_96_dpi.png",
-            aComponentDescription = "Enables running a Linux kernel inside a lightweight virtual machine",
-            anInstallationLocation = ""
-        )
+    override val componentInfo: ComponentInfo = ComponentInfo(
+        aComponentLogoResourceFilepath = "assets/component_logos/wsl_96_dpi.png",
+        aComponentDescription = "Enables running a Linux kernel inside a lightweight virtual machine",
+        anInstallationLocation = ""
+    )
 
     override var states: MutableState<ComponentState> = mutableStateOf(
         ComponentState(
-            isInstalled(),
-            hasUpdate(),
-            Job(),
-            false
+            isInstalled = isInstalled(),
+            isUpdatable = hasUpdate(),
+            componentJob = Job(),
+            isComponentJobRunning = false
         )
     )
 
@@ -71,6 +70,11 @@ class WslComponent : IComponent {
      */
     override var updatableState: MutableState<Boolean> = mutableStateOf(false)
     //</editor-fold>
+
+    init {
+        installedState.value = isInstalled()
+        updatableState.value = hasUpdate()
+    }
 
     /**
      * Install WSL2 component

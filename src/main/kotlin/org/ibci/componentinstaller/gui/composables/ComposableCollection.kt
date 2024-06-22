@@ -33,49 +33,28 @@ import org.ibci.componentinstaller.model.util.CustomProcessBuilder
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
 import org.ibci.componentinstaller.util.logger.FileLogger
 import org.ibci.componentinstaller.util.logger.LogLevel
+import javax.swing.JOptionPane
 
 /**
  * Object for storing high-level composable functions
  */
 object ComposableCollection {
-    /**
-     * Describes the top header of the main window
-     *
-     */
-    @Composable
-    fun MainWindowHeader() {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .background(GuiDefinitions.PYSSA_BLUE_COLOR)
-                .padding(16.dp) // Padding around the text
-                .fillMaxWidth()
-        ) {
-            Image(
-                    painter = painterResource("assets/installer_48_dpi.png"),
-                    contentDescription = "Logo Image",
-                    modifier = Modifier
-                        .size(96.dp)
-                        .padding(top = 4.dp)
-            )
-            LowLevelComposable.standardText(
-                aText = "PySSA Component Installer",
-                aFontSize = 24.sp,
-                aFontColor = Color.White,
-                aFontWeight = FontWeight.SemiBold,
-            )
-        }
-    }
-
     @Composable
     fun componentItem(
-        aComponent: IComponent
+        aComponent: IComponent,
+        aController: MainWindowController,
+        anIsJobRunningState: MutableState<Boolean>
     ) {
         val tmpFileLogger = FileLogger()
         tmpFileLogger.append(LogLevel.DEBUG, "Running componentItem for ${aComponent.name}")
+        //<editor-fold desc="State variables">
         val interactionSource = remember { MutableInteractionSource() }
         val isHovered by interactionSource.collectIsHoveredAsState()
         val moreOptionsExpanded = remember { mutableStateOf(false) }
+        val coroutineScope = rememberCoroutineScope()
+        val dialogStates = remember { mutableStateMapOf<DialogType, Boolean>() }
+        val progressDescription = remember { mutableStateOf("A job is running ...") }
+        //</editor-fold>
         Row(
             modifier = Modifier
                 .background(if (isHovered) GuiDefinitions.COMPONENT_HOVER_BACKGROUND_COLOR else GuiDefinitions.COMPONENT_BACKGROUND_COLOR, shape = MaterialTheme.shapes.medium)
@@ -93,7 +72,15 @@ object ComposableCollection {
                     Row {
                         LowLevelComposable.componentNameText(aComponent.name)
                         Spacer(modifier = Modifier.weight(1f)) // Spacer to push button to the right
-                        componentActions(aComponent, moreOptionsExpanded)
+                        componentActions(
+                            aComponent,
+                            aController,
+                            moreOptionsExpanded,
+                            anIsJobRunningState,
+                            coroutineScope,
+                            dialogStates,
+                            progressDescription
+                        )
                     }
                     Column {
                         componentInformation(aComponent)
@@ -104,7 +91,15 @@ object ComposableCollection {
     }
 
     @Composable
-    fun componentActions(aComponent: IComponent, moreOptionsExpanded: MutableState<Boolean>) {
+    fun componentActions(
+        aComponent: IComponent,
+        aController: MainWindowController,
+        moreOptionsExpanded: MutableState<Boolean>,
+        anIsJobRunningState: MutableState<Boolean>,
+        aCoroutineScopeState: CoroutineScope,
+        dialogStates: MutableMap<DialogType, Boolean>,
+        progressDescription: MutableState<String>
+    ) {
         val tmpFileLogger = FileLogger()
         tmpFileLogger.append(LogLevel.DEBUG, "Runs component()")
         if (aComponent.states.component1().isInstalled) {
@@ -112,15 +107,53 @@ object ComposableCollection {
             if (aComponent.states.component1().isUpdatable) {
                 // Component has an update available
                 LowLevelComposable.standardButton(
-                    onClickFunction = { },
+                    onClickFunction = {
+                        aComponent.states.value.componentJob.cancel()
+                        aComponent.states.value.componentJob = aCoroutineScopeState.launch {
+                            anIsJobRunningState.value = true
+                            aComponent.states.value.isComponentJobRunning = true
+                            val tmpResult: Boolean = aController.updateComponent(aComponent) { tmpProgressDescription ->
+                                    withContext(context = Dispatchers.Main) {
+                                        progressDescription.value = tmpProgressDescription
+                                }
+                            }
+                            aComponent.states.value.isInstalled = aComponent.isInstalled()
+                            aComponent.states.value.isComponentJobRunning = false
+                            anIsJobRunningState.value = false
+                            if (tmpResult) {
+                                dialogStates[DialogType.INSTALL_SUCCESSFUL] = true
+                            } else {
+                                dialogStates[DialogType.INSTALL_FAILED] = true
+                            }
+                        }
+                    },
                     aText = "Update",
-                    isEnabled = false // Needs its own state
+                    isEnabled = !anIsJobRunningState.value
                 )
             }
         } else {
             // Component is not installed
             LowLevelComposable.outlinedStandardButton(
-                onClickFunction = { },
+                onClickFunction = {
+                    aComponent.states.value.componentJob.cancel()
+                    aComponent.states.value.componentJob = aCoroutineScopeState.launch {
+                        anIsJobRunningState.value = true
+                        aComponent.states.value.isComponentJobRunning = true
+                        val tmpResult: Boolean = aController.installComponent(aComponent) { tmpProgressDescription ->
+                                withContext(context = Dispatchers.Main) {
+                                    progressDescription.value = tmpProgressDescription
+                            }
+                        }
+                        aComponent.states.value.isInstalled = aComponent.isInstalled()
+                        aComponent.states.value.isComponentJobRunning = false
+                        anIsJobRunningState.value = false
+                        if (tmpResult) {
+                            dialogStates[DialogType.INSTALL_SUCCESSFUL] = true
+                        } else {
+                            dialogStates[DialogType.INSTALL_FAILED] = true
+                        }
+                    }
+                },
                 aText = "Install",
                 isEnabled = true
             )
@@ -143,13 +176,29 @@ object ComposableCollection {
                 )
             }
             if (moreOptionsExpanded.value) {
-                moreOptionsMenu(aComponent, moreOptionsExpanded)
+                moreOptionsMenu(
+                    aComponent,
+                    aController,
+                    moreOptionsExpanded,
+                    anIsJobRunningState,
+                    aCoroutineScopeState,
+                    dialogStates,
+                    progressDescription
+                )
             }
         }
     }
 
     @Composable
-    fun moreOptionsMenu(aComponent: IComponent, moreOptionsExpanded: MutableState<Boolean>) {
+    fun moreOptionsMenu(
+        aComponent: IComponent,
+        aController: MainWindowController,
+        moreOptionsExpanded: MutableState<Boolean>,
+        anIsJobRunningState: MutableState<Boolean>,
+        aCoroutineScopeState: CoroutineScope,
+        dialogStates: MutableMap<DialogType, Boolean>,
+        progressDescription: MutableState<String>
+    ) {
         DropdownMenu(
             expanded = moreOptionsExpanded.value,
             onDismissRequest = { moreOptionsExpanded.value = false },
@@ -166,7 +215,26 @@ object ComposableCollection {
             }
             if (aComponent.states.component1().isInstalled && aComponent.checkPrerequisitesForUninstallation()) {
                 LowLevelComposable.standardDropdownMenuItem(
-                    onClickFunction = { },
+                    onClickFunction = {
+                        aComponent.states.value.componentJob.cancel()
+                        aComponent.states.value.componentJob = aCoroutineScopeState.launch {
+                            anIsJobRunningState.value = true
+                            aComponent.states.value.isComponentJobRunning = true
+                            val tmpResult: Boolean = aController.uninstallComponent(aComponent) { tmpProgressDescription ->
+                                    withContext(context = Dispatchers.Main) {
+                                        progressDescription.value = tmpProgressDescription
+                                }
+                            }
+                            aComponent.states.value.isInstalled = aComponent.isInstalled()
+                            aComponent.states.value.isComponentJobRunning = false
+                            anIsJobRunningState.value = false
+                            if (tmpResult) {
+                                dialogStates[DialogType.INSTALL_SUCCESSFUL] = true
+                            } else {
+                                dialogStates[DialogType.INSTALL_FAILED] = true
+                            }
+                        }
+                    },
                     aText = "Uninstall",
                     aFontColor = GuiDefinitions.COMPONENT_UNINSTALL_COLOR
                 )

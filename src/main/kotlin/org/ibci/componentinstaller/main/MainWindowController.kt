@@ -39,16 +39,20 @@ class MainWindowController() {
     suspend fun uninstallComponent(
         aComponent: IComponent,
         aProgressDescriptionUpdate: suspend (String) -> Unit
-    ) {
+    ) : Boolean {
         val tmpComponentName: String = aComponent.name
         aProgressDescriptionUpdate("Removing component $tmpComponentName ...")
         delay(2000)
         aProgressDescriptionUpdate("Running removing process ...")
         delay(2000)
-        aComponent.uninstall()
-        aProgressDescriptionUpdate("Finish up removing ...")
-        delay(2000)
-        aComponent.isInstalled()
+        if (aComponent.uninstall()) {
+            aProgressDescriptionUpdate("Finish up removing ...")
+            delay(2000)
+            aComponent.isInstalled()
+            return true
+        } else {
+            return false
+        }
     }
 
     /**

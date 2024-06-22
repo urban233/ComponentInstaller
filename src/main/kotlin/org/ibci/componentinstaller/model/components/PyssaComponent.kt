@@ -70,13 +70,13 @@ class PyssaComponent: IComponent {
         )
 
     override var states: MutableState<ComponentState> = mutableStateOf(
-            ComponentState(
-                isInstalled(),
-                hasUpdate(),
-                Job(),
-                false
-            )
+        ComponentState(
+            isInstalled(),
+            hasUpdate(),
+            Job(),
+            false
         )
+    )
 
     /**
      * The installation state

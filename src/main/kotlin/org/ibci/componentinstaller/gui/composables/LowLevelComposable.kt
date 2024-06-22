@@ -156,11 +156,6 @@ object LowLevelComposable {
                 fontFamily = GuiDefinitions.DEFAULT_FONT_FAMILY,
                 fontSize = 15.sp
             )
-//            Text(
-//                text = aText,
-//                color = aFontColor,
-//                fontSize = 13.sp
-//            )
         }
     }
 
@@ -174,7 +169,7 @@ object LowLevelComposable {
             painter = painterResource(aLogoResourcePath),
             contentDescription = "Logo Image",
             modifier = Modifier
-                .size(125.dp)
+                .size(96.dp)
                 .padding(top = 12.dp)
         )
     }
