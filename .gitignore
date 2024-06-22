@@ -65,3 +65,10 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### WindowsWrapper Project ###
+WindowsWrapper/.idea
+WindowsWrapper/.vs
+WindowsWrapper/bin
+WindowsWrapper/obj
+

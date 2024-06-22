@@ -82,4 +82,9 @@ object PathDefinitions {
      *
      */
     const val PIP_EXE: String = "${PYSSA_PROGRAM_BIN_DIR}\\.venv\\Scripts\\pip.exe"
+    /**
+     * Filepath of the windows wrapper executable file
+     *
+     */
+    const val WINDOWS_WRAPPER_EXE: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\tools\\WindowsWrapper.exe"
 }
