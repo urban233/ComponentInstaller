@@ -11,9 +11,9 @@ public class Communicator {
     public String lastReply;
 
     public boolean sendRequest(String aRequest) {
-//        if (!startWindowsWrapper()) {
-//            return false;
-//        }
+        if (!startWindowsWrapper()) {
+            return false;
+        }
         try (ZContext context = new ZContext()) {
             // Socket to talk to clients
             System.out.println("Creating REQ socket ...");
@@ -42,6 +42,25 @@ public class Communicator {
             // int exitCode = process.waitFor();
             // System.out.println("Process exited with code: " + exitCode);
         } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    public boolean sendRequestWithDebug(String aRequest) {
+        try (ZContext context = new ZContext()) {
+            // Socket to talk to clients
+            System.out.println("Creating REQ socket ...");
+            ZMQ.Socket socket = context.createSocket(SocketType.REQ);
+            socket.connect("tcp://localhost:7879");
+            // Send a request to the server
+            socket.send(aRequest.getBytes(), 0);
+            // Waiting for reply
+            byte[] reply = socket.recv(0);
+            this.lastReply = new String(reply);
+            socket.close();
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }

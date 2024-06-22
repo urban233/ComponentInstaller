@@ -154,11 +154,13 @@ class PyssaComponent: IComponent {
         if (!File(PathDefinitions.PYSSA_PROGRAM_DIR).exists()) {
             File(PathDefinitions.PYSSA_PROGRAM_DIR).mkdirs()
         }
+        fileLogger.append(LogLevel.INFO, "Downloading windows_package.zip ...")
         // Download windows pyssa package
         if (!Io.downloadFile(UrlDefinitions.PYSSA_WINDOWS_PACKAGE, "${PathDefinitions.PYSSA_PROGRAM_DIR}\\windows_package.zip")) {
             fileLogger.append(LogLevel.ERROR, "The windows_package.zip could not be downloaded!")
             return false
         }
+        fileLogger.append(LogLevel.INFO, "Downloading windows_package.zip finished.")
         return true
     }
 
@@ -210,6 +212,7 @@ class PyssaComponent: IComponent {
                 fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
                 return false
             }
+            fileLogger.append(LogLevel.INFO, "Sending request to: Unzip windows_package.zip ...")
             if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
                 fileLogger.append(LogLevel.ERROR, "Unzip of windows_package.zip with the Windows wrapper failed!")
                 return false
@@ -242,6 +245,7 @@ class PyssaComponent: IComponent {
                 fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
                 return false
             }
+            fileLogger.append(LogLevel.INFO, "Sending request to: Create Windows shortcuts ...")
             if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
                 fileLogger.append(LogLevel.ERROR, "Creating shortcuts with the Windows wrapper failed!")
                 return false
@@ -262,6 +266,7 @@ class PyssaComponent: IComponent {
      */
     private fun setupPythonEnvironment(): Boolean {
         try {
+            fileLogger.append(LogLevel.INFO, "Starting to setup the python environment ...")
             val tmpPythonHelper: PythonHelper = PythonHelper()
             if (!tmpPythonHelper.setupVenv()) {
                 fileLogger.append(LogLevel.ERROR, "Could not setup Python with .venv.")
@@ -275,6 +280,7 @@ class PyssaComponent: IComponent {
                 fileLogger.append(LogLevel.ERROR, "Could not install PyMOL.")
                 return false
             }
+            fileLogger.append(LogLevel.INFO, "Python environment was successfully setup.")
             return true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")

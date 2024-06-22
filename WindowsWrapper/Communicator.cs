@@ -10,7 +10,7 @@ public class Communicator
 
     public String CreateConnection()
     {
-        _responseSocket = new ResponseSocket("@tcp://localhost:7878");
+        _responseSocket = new ResponseSocket("@tcp://localhost:7878"); // For debugging purposes change to 7879, else 7878
         Console.WriteLine("Waiting for request ...");
         string tmpJsonFilepath = _responseSocket.ReceiveFrameString();
         Console.WriteLine("Received request: " + tmpJsonFilepath);

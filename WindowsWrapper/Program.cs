@@ -6,6 +6,8 @@ class Program
 {
     static void Main(string[] args)
     {
+        Logging.SetupLoggerConfig();
+
         Communicator communicator = new Communicator();
         String tmpJsonFilepath = communicator.CreateConnection();
         RequestData tmpRequestData = communicator.GetRequestData(tmpJsonFilepath);
@@ -67,6 +69,18 @@ class Program
                 }
                 break;
             #endregion
+
+            case OperationTypes.RunCmdCommand:
+                try
+                {
+                    ConsoleRunner.RunCommandInCmd(tmpRequestData.data[0]);
+                    tmpResult = "Command process ended successfully.";
+                }
+                catch (Exception ex)
+                {
+                    tmpResult = ex.Message;
+                }
+                break;
 
             #region Default
             default:
