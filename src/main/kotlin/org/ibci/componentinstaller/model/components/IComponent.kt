@@ -1,6 +1,7 @@
 package org.ibci.componentinstaller.model.components
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import org.ibci.componentinstaller.gui.ComponentState
 
@@ -31,23 +32,9 @@ interface IComponent {
     val componentInfo: ComponentInfo
 
     /**
-     * The installation state
-     *
-     * This should be seen as a private property, therefore the leading underscore.
-     */
-    var installedState: MutableState<Boolean>
-
-    /**
-     * The update state
-     *
-     * This should be seen as a private property, therefore the leading underscore.
-     */
-    var updatableState: MutableState<Boolean>
-
-    /**
      * All states related to the component
      */
-    var states: MutableState<ComponentState>
+    var states: ComponentState
     //</editor-fold>
 
     /**
@@ -55,21 +42,21 @@ interface IComponent {
      *
      * @return True if component is successfully installed, false: Otherwise
      */
-    fun install(): Boolean
+    suspend fun install(): Boolean
 
     /**
      * Uninstall a component
      *
      * @return True if component is successfully uninstalled, false: Otherwise
      */
-    fun uninstall(): Boolean
+    suspend fun uninstall(): Boolean
 
     /**
      * Update a component
      *
      * @return True if component is successfully updated, false: Otherwise
      */
-    fun update(): Boolean
+    suspend fun update(aSystemState: State<List<Boolean>>): Boolean
 
     /**
      * Checks if the component is installed
@@ -90,12 +77,12 @@ interface IComponent {
      *
      * @return True if component can be installed, false: Otherwise
      */
-    fun checkPrerequisitesForInstallation(): Boolean
+    fun checkPrerequisitesForInstallation(aSystemState: State<List<Boolean>>): Boolean
 
     /**
      * Checks if all prerequisite are met for an uninstallation
      *
      * @return True if component can be uninstalled, false: Otherwise
      */
-    fun checkPrerequisitesForUninstallation(): Boolean
+    fun checkPrerequisitesForUninstallation(aSystemState: State<List<Boolean>>): Boolean
 }

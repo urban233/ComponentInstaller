@@ -14,12 +14,12 @@ object CliOperations {
      * Installs a component with the --install option
      *
      */
-    fun installComponent(aComponent: IComponent, theArgs: Array<String>, aFileLogger: FileLogger) {
+    suspend fun installComponent(aComponent: IComponent, theArgs: Array<String>, aFileLogger: FileLogger) {
         if (theArgs[0] == "--install" && theArgs[1] == aComponent.name) {
             aFileLogger.append(LogLevel.INFO, "User requested to install ${aComponent.name}.")
             if (!aComponent.isInstalled()) {
                 aFileLogger.append(LogLevel.INFO, "Starting ${aComponent.name} installation ...")
-                aComponent.install()
+                //aComponent.install()
             } else {
                 aFileLogger.append(LogLevel.INFO, "Nothing to do. ${aComponent.name} is already installed.")
             }
@@ -30,7 +30,7 @@ object CliOperations {
      * Uninstalls a component with the --uninstall option
      *
      */
-    fun uninstallComponent(aComponent: IComponent, theArgs: Array<String>, aFileLogger: FileLogger) {
+    suspend fun uninstallComponent(aComponent: IComponent, theArgs: Array<String>, aFileLogger: FileLogger) {
         if (theArgs[0] == "--uninstall" && theArgs[1] == aComponent.name) {
             aFileLogger.append(LogLevel.INFO, "User requested to uninstall ${aComponent.name}.")
             if (aComponent.isInstalled()) {

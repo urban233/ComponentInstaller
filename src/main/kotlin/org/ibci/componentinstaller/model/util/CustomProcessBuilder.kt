@@ -19,6 +19,7 @@ class CustomProcessBuilder {
      * @param aCommand An array containing the command and flags to run
      * @param anExecutable Executable file that should be used to run the command against (Optional, default: cmd.exe)
      *
+     * @return A string array containing the command console output
      * @throws IllegalArgumentException Thrown if `aCommand` is either an empty array or the first element is an empty string
      */
     fun runCommand(aCommand: Array<String>, anExecutable: String = "cmd.exe") : Array<String> {
@@ -34,6 +35,29 @@ class CustomProcessBuilder {
         } catch (ex: Exception) {
             ex.printStackTrace()
             return emptyArray()
+        }
+    }
+
+    /**
+     * Runs a command and does not wait for its completion and returns the process object
+     *
+     * @param aCommand An array containing the command and flags to run
+     * @param anExecutable Executable file that should be used to run the command against (Optional, default: cmd.exe)
+     *
+     * @return A process object if the command could be opened, Otherwise: null
+     * @throws IllegalArgumentException Thrown if `aCommand` is either an empty array or the first element is an empty string
+     */
+    fun openCommand(aCommand: Array<String>, anExecutable: String = "cmd.exe") : Process? {
+        if (aCommand.isEmpty() || aCommand[0] == "") {
+            throw IllegalArgumentException("aCommand is either an empty array or the first element is an empty string")
+        }
+        try {
+            this.cmdBuilder.command(anExecutable, *aCommand)
+            val process: Process = cmdBuilder.start()
+            return process
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+            return null
         }
     }
 }

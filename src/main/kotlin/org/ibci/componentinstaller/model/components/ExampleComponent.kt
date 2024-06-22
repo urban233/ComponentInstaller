@@ -1,11 +1,12 @@
 package org.ibci.componentinstaller.model.components
 
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import org.ibci.componentinstaller.gui.ComponentState
 import org.ibci.componentinstaller.util.logger.FileLogger
-import org.ibci.componentinstaller.util.logger.LogLevel
 import java.io.File
 
 /**
@@ -49,29 +50,10 @@ class ExampleComponent(aName: String) : IComponent {
             anInstallationLocation = ""
         )
 
-    override var states: MutableState<ComponentState> = mutableStateOf(
-        ComponentState(
-            isInstalled(),
-            hasUpdate(),
-            Job(),
-            false
-        )
-    )
-
-    /**
-     * The installation state
-     */
-    override var installedState = mutableStateOf(false)
-
-    /**
-     * The update state
-     */
-    override var updatableState = mutableStateOf(false)
-
-    init {
-        isInstalled()
+    override var states: ComponentState = ComponentState(
+        isInstalled(),
         hasUpdate()
-    }
+    )
 
     /**
      * Checks if the component is installed
@@ -81,11 +63,10 @@ class ExampleComponent(aName: String) : IComponent {
     override fun isInstalled() : Boolean {
         val tmpFile = File("C:\\TEMP\\example_component.isInstalled")
         if (tmpFile.exists()) {
-            installedState.value = true
+            return true
         } else {
-            installedState.value = false
+            return false
         }
-        return installedState.value
     }
 
     /**
@@ -95,11 +76,10 @@ class ExampleComponent(aName: String) : IComponent {
      */
     override fun hasUpdate() : Boolean {
         if (false) { // TODO: Add the correct logic in the if-statement
-            updatableState.value = true
+            return true
         } else {
-            updatableState.value = false
+            return false
         }
-        return updatableState.value
     }
 
     /**
@@ -107,9 +87,12 @@ class ExampleComponent(aName: String) : IComponent {
      *
      * @return True if component is successfully installed, false: Otherwise
      */
-    override fun install(): Boolean {
+    override suspend fun install(): Boolean {
         val tmpFile = File("C:\\TEMP\\example_component.isInstalled")
-        return tmpFile.createNewFile()
+        delay(2000)
+        return withContext(Dispatchers.IO) {
+            tmpFile.createNewFile()
+        }
     }
 
     /**
@@ -117,7 +100,7 @@ class ExampleComponent(aName: String) : IComponent {
      *
      * @return True if component is successfully uninstalled, false: Otherwise
      */
-    override fun uninstall(): Boolean {
+    override suspend fun uninstall(): Boolean {
         val tmpFile = File("C:\\TEMP\\example_component.isInstalled")
         return tmpFile.delete()
     }
@@ -127,7 +110,7 @@ class ExampleComponent(aName: String) : IComponent {
      *
      * @return True if component is successfully updated, false: Otherwise
      */
-    override fun update(): Boolean {
+    override suspend fun update(aSystemState: State<List<Boolean>>): Boolean {
         TODO("Not yet implemented")
     }
 
@@ -136,7 +119,7 @@ class ExampleComponent(aName: String) : IComponent {
      *
      * @return True if component can be installed, false: Otherwise
      */
-    override fun checkPrerequisitesForInstallation(): Boolean {
+    override fun checkPrerequisitesForInstallation(aSystemState: State<List<Boolean>>): Boolean {
         return true // TODO: This is only a placeholder!
     }
 
@@ -145,7 +128,7 @@ class ExampleComponent(aName: String) : IComponent {
      *
      * @return True if component can be uninstalled, false: Otherwise
      */
-    override fun checkPrerequisitesForUninstallation(): Boolean {
+    override fun checkPrerequisitesForUninstallation(aSystemState: State<List<Boolean>>): Boolean {
         return true // TODO: This is only a placeholder!
     }
 }

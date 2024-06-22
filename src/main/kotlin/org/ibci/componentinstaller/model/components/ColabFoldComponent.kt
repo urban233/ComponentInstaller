@@ -1,6 +1,7 @@
 package org.ibci.componentinstaller.model.components
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.Job
 import org.ibci.componentinstaller.gui.ComponentState
@@ -9,8 +10,12 @@ import org.ibci.componentinstaller.model.util.Io.downloadFile
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
 import org.ibci.componentinstaller.model.util.definitions.PathDefinitions
 import org.ibci.componentinstaller.model.util.definitions.UrlDefinitions
+import org.ibci.componentinstaller.util.OperationTypeDefinitions
+import org.ibci.componentinstaller.util.RequestData
+import org.ibci.componentinstaller.util.Utils
 import org.ibci.componentinstaller.util.logger.FileLogger
 import org.ibci.componentinstaller.util.logger.LogLevel
+import org.ibci.extension.communication.Communicator
 import java.io.File
 
 /**
@@ -24,6 +29,11 @@ class ColabFoldComponent: IComponent {
      *
      */
     private val fileLogger = FileLogger()
+    /**
+     * The communicator for the windows wrapper
+     *
+     */
+    private val communicator = Communicator()
     /**
      * The ColabFold name
      *
@@ -54,28 +64,14 @@ class ColabFoldComponent: IComponent {
     override val componentInfo: ComponentInfo
         get() = ComponentInfo(
             aComponentLogoResourceFilepath = "assets/component_logos/colabfold_96_dpi.png",
-            aComponentDescription = "An faster AlphaFold protein structure prediction tool",
+            aComponentDescription = "Prediction of protein structures and complexes on a local computer",
             anInstallationLocation = PathDefinitions.LOCAL_COLABFOLD_DIR
         )
 
-    override var states: MutableState<ComponentState> = mutableStateOf(
-        ComponentState(
-            isInstalled(),
-            hasUpdate(),
-            Job(),
-            false
-        )
+    override var states: ComponentState = ComponentState(
+        isInstalled(),
+        hasUpdate()
     )
-
-    /**
-     * The installation state
-     */
-    override var installedState = mutableStateOf(false)
-
-    /**
-     * The update state
-     */
-    override var updatableState = mutableStateOf(false)
     //</editor-fold>
 
     /**
@@ -83,14 +79,24 @@ class ColabFoldComponent: IComponent {
      *
      * @return True if component is successfully installed, false: Otherwise
      */
-    override fun install(): Boolean {
+    override suspend fun install(): Boolean {
         // Check if alma-colabfold-9-rootfs.tar exists
-        val tmpTarFile: File = File("${PathDefinitions.PYSSA_INSTALLER_PROGRAM_DIR}\\temp\\alma-colabfold-9-rootfs.tar")
-        if (!tmpTarFile.exists()) {
-            // Download of tar file
-            downloadFile(UrlDefinitions.COLABFOLD_ROOTFS_TAR, tmpTarFile.absolutePath.toString())
+        val tmpDir: File = File("${PathDefinitions.PYSSA_INSTALLER_PROGRAM_DIR}\\temp")
+        val tmpTarFile: File = File("${tmpDir}\\alma-colabfold-9-rootfs.tar")
+        if (!tmpDir.exists()) {
+            tmpDir.mkdirs()
         }
-
+        // First check if anything is stored offline
+        if (!tmpTarFile.exists()) {
+            // Nothing found, download needed
+            if (Utils.isInternetAvailable()) {
+                fileLogger.append(LogLevel.INFO, "Downloading almalinux9 distro ...")
+                downloadFile(UrlDefinitions.COLABFOLD_ROOTFS_TAR, tmpTarFile.absolutePath)
+                fileLogger.append(LogLevel.INFO, "Downloading almalinux9 distro finished.")
+            } else {
+                return false
+            }
+        }
         // Create necessary directories if they don't exist
         val tmpDirectoriesToCreate: Array<File> = arrayOf(
             File(PathDefinitions.LOCAL_COLABFOLD_DIR),
@@ -106,24 +112,46 @@ class ColabFoldComponent: IComponent {
         fileLogger.append(LogLevel.INFO, "Start AlmaLinux9 distribution import.")
 
         try {
-            val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
-            tmpCustomProcessBuilder.runCommand(
-                arrayOf(
-                    "/C", "wsl", "--import", "almaColabfold9",
-                    "${PathDefinitions.LOCAL_COLABFOLD_DIR}\\storage",
-                    tmpTarFile.absolutePath.toString()
-                )
+            val tmpData = RequestData(
+                OperationTypeDefinitions.RUN_CMD_COMMAND,
+                arrayOf("wsl --import almaColabfold9 C:\\ProgramData\\localcolabfold\\storage C:\\ProgramData\\IBCI\\PySSA-Installer\\temp\\alma-colabfold-9-rootfs.tar")
             )
-
-            fileLogger.append(LogLevel.INFO, "WSL2 command finished without errors. Colabfold successfully imported.")
-            if (isInstalled()){
-                return true
+            if (!tmpData.writeToJsonFile()) {
+                fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
+                return false
+            }
+            fileLogger.append(LogLevel.INFO, "Sending request to: Importing the AlmaLinux distribution ...")
+            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON, false)) {
+                fileLogger.append(LogLevel.ERROR, "Importing the AlmaLinux distribution with the Windows wrapper failed!")
+                return false
+            } else {
+                fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
             }
             return true
         } catch (ex: Exception) {
-            fileLogger.append(LogLevel.ERROR, "Process ended with error: $ex")
+            fileLogger.append(LogLevel.ERROR, "$ex")
             return false
         }
+
+//        try {
+//            val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
+//            tmpCustomProcessBuilder.runCommand(
+//                arrayOf(
+//                    "/C", "wsl", "--import", "almaColabfold9",
+//                    "${PathDefinitions.LOCAL_COLABFOLD_DIR}\\storage",
+//                    tmpTarFile.absolutePath.toString()
+//                )
+//            )
+//
+//            fileLogger.append(LogLevel.INFO, "WSL2 command finished without errors. Colabfold successfully imported.")
+//            if (isInstalled()){
+//                return true
+//            }
+//            return true
+//        } catch (ex: Exception) {
+//            fileLogger.append(LogLevel.ERROR, "Process ended with error: $ex")
+//            return false
+//        }
     }
 
     /**
@@ -131,25 +159,33 @@ class ColabFoldComponent: IComponent {
      *
      * @return True if component is successfully installed, false: Otherwise
      */
-    override fun uninstall(): Boolean {
+    override suspend fun uninstall(): Boolean {
         fileLogger.append(LogLevel.INFO, "Start Colabfold uninstall.")
         try {
-            val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
-            tmpCustomProcessBuilder.runCommand(arrayOf("/C", "wsl --unregister almaColabfold9"))
-            fileLogger.append(LogLevel.INFO, "WSL2 command finished without errors.")
-            val localColabfoldPath: File = File(PathDefinitions.LOCAL_COLABFOLD_DIR)
-            if (!File(PathDefinitions.LOCAL_COLABFOLD_STORAGE_VDHX).exists()) {
-                if (localColabfoldPath.exists()) {
-                    localColabfoldPath.deleteRecursively()
-                }
-            }
-            else {
-                // Unregistering the WSL2 distro failed therefore return false
+            val tmpData = RequestData(
+                OperationTypeDefinitions.RUN_CMD_COMMAND,
+                arrayOf("wsl --unregister almaColabfold9")
+            )
+            if (!tmpData.writeToJsonFile()) {
+                fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
                 return false
             }
-            return true
+            fileLogger.append(LogLevel.INFO, "Sending request to: Importing the AlmaLinux distribution ...")
+            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON, false)) {
+                fileLogger.append(LogLevel.ERROR, "Importing the AlmaLinux distribution with the Windows wrapper failed!")
+                return false
+            } else {
+                fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
+                val localColabfoldPath: File = File(PathDefinitions.LOCAL_COLABFOLD_DIR)
+                if (!File(PathDefinitions.LOCAL_COLABFOLD_STORAGE_VDHX).exists()) {
+                    if (localColabfoldPath.exists()) {
+                        localColabfoldPath.deleteRecursively()
+                    }
+                }
+                return true
+            }
         } catch (ex: Exception) {
-            fileLogger.append(LogLevel.ERROR, "Process ended with error: $ex")
+            fileLogger.append(LogLevel.ERROR, "$ex")
             return false
         }
     }
@@ -159,7 +195,7 @@ class ColabFoldComponent: IComponent {
      *
      * @return True if component is successfully installed, false: Otherwise
      */
-    override fun update(): Boolean {
+    override suspend fun update(aSystemState: State<List<Boolean>>): Boolean {
         return true
     }
 
@@ -187,14 +223,27 @@ class ColabFoldComponent: IComponent {
      *
      * @return True if component can be installed, false: Otherwise
      */
-    override fun checkPrerequisitesForInstallation(): Boolean {
-        val tmpWslComponent: WslComponent = WslComponent()
-        val tmpPyssaComponent: PyssaComponent = PyssaComponent()
-        if (!tmpPyssaComponent.states.component1().isInstalled && tmpWslComponent.states.component1().isInstalled) {
-            return true
+    override fun checkPrerequisitesForInstallation(aSystemState: State<List<Boolean>>): Boolean {
+        // 2 -> PySSA, 0 -> WSL2
+        if (!aSystemState.value[2] && aSystemState.value[0]) {
+            val tmpTarFile: File = File(PathDefinitions.PYSSA_INSTALLER_ALMALINUX_TAR)
+            if (tmpTarFile.exists()) {
+                return true
+            }
+            if (Utils.isInternetAvailable()) {
+                return true
+            }
+            return false
         } else {
             return false
         }
+//        val tmpWslComponent: WslComponent = WslComponent()
+//        val tmpPyssaComponent: PyssaComponent = PyssaComponent()
+//        if (!tmpPyssaComponent.states.isInstalled.value && tmpWslComponent.states.isInstalled.value) {
+//            return true
+//        } else {
+//            return false
+//        }
     }
 
     /**
@@ -202,10 +251,8 @@ class ColabFoldComponent: IComponent {
      *
      * @return True if component can be uninstalled, false: Otherwise
      */
-    override fun checkPrerequisitesForUninstallation(): Boolean {
-        val tmpWslComponent: WslComponent = WslComponent()
-        val tmpPyssaComponent: PyssaComponent = PyssaComponent()
-        if (!tmpPyssaComponent.states.component1().isInstalled && tmpWslComponent.states.component1().isInstalled) {
+    override fun checkPrerequisitesForUninstallation(aSystemState: State<List<Boolean>>): Boolean {
+        if (!aSystemState.value[2] && aSystemState.value[0]) {
             return true
         } else {
             return false

@@ -1,4 +1,5 @@
 package org.ibci.extension.communication;
+import org.ibci.componentinstaller.model.util.CustomProcessBuilder;
 import org.ibci.componentinstaller.model.util.definitions.PathDefinitions;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
@@ -10,8 +11,8 @@ public class Communicator {
 
     public String lastReply;
 
-    public boolean sendRequest(String aRequest) {
-        if (!startWindowsWrapper()) {
+    public boolean sendRequest(String aRequest, boolean asAdmin) {
+        if (!startWindowsWrapper(asAdmin)) {
             return false;
         }
         try (ZContext context = new ZContext()) {
@@ -32,18 +33,31 @@ public class Communicator {
         return true;
     }
 
-    private boolean startWindowsWrapper() {
+    private boolean startAdminWindowsWrapper() {
+        CustomProcessBuilder tmpCustomProcessBuilder = new CustomProcessBuilder();
+        String[] tmpArgs = new String[2];
+        tmpArgs[0] = "--admin";
+        tmpArgs[1] = "--keep-checking";
+        tmpCustomProcessBuilder.runCommand(tmpArgs, PathDefinitions.WINDOWS_TASKS_EXE);
+        return true;
+    }
+
+    private boolean startWindowsWrapper(boolean asAdmin) {
         // Create a ProcessBuilder instance
-        ProcessBuilder processBuilder = new ProcessBuilder(PathDefinitions.WINDOWS_WRAPPER_EXE);
-        try {
-            // Start the process
-            Process process = processBuilder.start();
-            // Optionally, you can wait for the process to complete later
-            // int exitCode = process.waitFor();
-            // System.out.println("Process exited with code: " + exitCode);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
+        if (asAdmin) {
+            CustomProcessBuilder tmpCustomProcessBuilder = new CustomProcessBuilder();
+            String[] tmpArgs = new String[1];
+            tmpArgs[0] = PathDefinitions.WINDOWS_TASKS_EXE;
+            Process process = tmpCustomProcessBuilder.openCommand(tmpArgs, PathDefinitions.CMD_ELEVATOR_EXE);
+        } else {
+            try {
+                ProcessBuilder processBuilder;
+                processBuilder = new ProcessBuilder(PathDefinitions.WINDOWS_TASKS_EXE);
+                Process process = processBuilder.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
         }
         return true;
     }

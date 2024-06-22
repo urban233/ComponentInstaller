@@ -1,7 +1,9 @@
 package org.ibci.componentinstaller.model.components
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Path
 import kotlinx.coroutines.Job
 import org.ibci.componentinstaller.gui.ComponentState
 import org.ibci.componentinstaller.model.util.*
@@ -10,6 +12,7 @@ import org.ibci.componentinstaller.model.util.definitions.PathDefinitions
 import org.ibci.componentinstaller.model.util.definitions.UrlDefinitions
 import org.ibci.componentinstaller.util.OperationTypeDefinitions
 import org.ibci.componentinstaller.util.RequestData
+import org.ibci.componentinstaller.util.Utils
 import org.ibci.componentinstaller.util.logger.FileLogger
 import org.ibci.componentinstaller.util.logger.LogLevel
 import org.ibci.extension.communication.Communicator
@@ -69,24 +72,10 @@ class PyssaComponent: IComponent {
             anInstallationLocation = PathDefinitions.PYSSA_PROGRAM_DIR
         )
 
-    override var states: MutableState<ComponentState> = mutableStateOf(
-        ComponentState(
-            isInstalled(),
-            hasUpdate(),
-            Job(),
-            false
-        )
+    override var states: ComponentState = ComponentState(
+        isInstalled(),
+        hasUpdate()
     )
-
-    /**
-     * The installation state
-     */
-    override var installedState = mutableStateOf(false)
-
-    /**
-     * The update state
-     */
-    override var updatableState = mutableStateOf(false)
     //</editor-fold>
 
     //<editor-fold desc="Install">
@@ -95,16 +84,22 @@ class PyssaComponent: IComponent {
      *
      * @return True if component is successfully installed, false: Otherwise
      */
-    override fun install(): Boolean {
+    override suspend fun install(): Boolean {
         // First installer prototype has only an online version, therefore no offline package is needed but an internet connection!
         try {
-            val tmpHasInternet: Boolean = isInternetAvailable()
-            if (tmpHasInternet) {
-                if (!downloadWindowsPackage()) {
+            val tmpWindowsPackage: File = File(PathDefinitions.PYSSA_INSTALLER_WINDOWS_PACKAGE_ZIP)
+            // First check if anything is stored offline
+            if (tmpWindowsPackage.exists()) {
+                if (!copyWindowsPackage()) {
                     return false
                 }
             } else {
-                if (!copyWindowsPackage()) {
+                // No offline files found & try to download
+                if (Utils.isInternetAvailable()) {
+                    if (!downloadWindowsPackage()) {
+                        return false
+                    }
+                } else {
                     return false
                 }
             }
@@ -127,22 +122,6 @@ class PyssaComponent: IComponent {
         }
     }
 
-    /**
-     * Check if internet connection is available
-     *
-     * @return True if component is successfully installed, false: Otherwise
-     */
-    // TODO: Check, if it works!
-    fun isInternetAvailable(): Boolean {
-        try {
-            val address: InetAddress = InetAddress.getByName("www.google.com")
-            !address.equals("")
-            return true
-        } catch (e: Exception) {
-            return false
-        }
-    }
-
     //<editor-fold desc="Windows package">
     /**
      * Downloads the Windows package for PySSA.
@@ -156,7 +135,7 @@ class PyssaComponent: IComponent {
         }
         fileLogger.append(LogLevel.INFO, "Downloading windows_package.zip ...")
         // Download windows pyssa package
-        if (!Io.downloadFile(UrlDefinitions.PYSSA_WINDOWS_PACKAGE, "${PathDefinitions.PYSSA_PROGRAM_DIR}\\windows_package.zip")) {
+        if (!Io.downloadFile(UrlDefinitions.PYSSA_WINDOWS_PACKAGE, PathDefinitions.PYSSA_INSTALLER_WINDOWS_PACKAGE_ZIP)) {
             fileLogger.append(LogLevel.ERROR, "The windows_package.zip could not be downloaded!")
             return false
         }
@@ -179,7 +158,7 @@ class PyssaComponent: IComponent {
             // Copy the windows pyssa package
             val tmpTargetFile: File = File("${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip")
             if (!tmpTargetFile.exists()) {
-                val sourceFile: File = File(PathDefinitions.PYSSA_INSTALLER_OFFLINE_WIN_PACKAGE_ZIP)
+                val sourceFile: File = File(PathDefinitions.PYSSA_INSTALLER_WINDOWS_PACKAGE_ZIP)
                 sourceFile.copyTo(tmpTargetFile, overwrite = true)
             }
             return true
@@ -213,7 +192,7 @@ class PyssaComponent: IComponent {
                 return false
             }
             fileLogger.append(LogLevel.INFO, "Sending request to: Unzip windows_package.zip ...")
-            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
+            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON, false)) {
                 fileLogger.append(LogLevel.ERROR, "Unzip of windows_package.zip with the Windows wrapper failed!")
                 return false
             } else {
@@ -246,7 +225,7 @@ class PyssaComponent: IComponent {
                 return false
             }
             fileLogger.append(LogLevel.INFO, "Sending request to: Create Windows shortcuts ...")
-            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
+            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON, false)) {
                 fileLogger.append(LogLevel.ERROR, "Creating shortcuts with the Windows wrapper failed!")
                 return false
             } else {
@@ -364,10 +343,9 @@ class PyssaComponent: IComponent {
      *
      * @return True if component is successfully uninstalled, false: Otherwise
      */
-    override fun uninstall(): Boolean {
+    override suspend fun uninstall(): Boolean {
         try {
-            val tmpSystemEntryHandler: SystemEntryHandler = SystemEntryHandler()
-            tmpSystemEntryHandler.removeShortcuts()
+            removeShortcuts()
             File(PathDefinitions.PYSSA_PROGRAM_DIR).deleteRecursively()
             return true
         } catch (ex: AccessDeniedException) {
@@ -375,6 +353,27 @@ class PyssaComponent: IComponent {
             return false
         } catch (ex: Exception) {
             // Error occurred during one of the function calls, therefore return false
+            fileLogger.append(LogLevel.ERROR, "$ex")
+            return false
+        }
+    }
+
+    private fun removeShortcuts() : Boolean {
+        try {
+            val tmpData = RequestData(OperationTypeDefinitions.REMOVE_SHORTCUTS, arrayOf("PySSA"))
+            if (!tmpData.writeToJsonFile()) {
+                fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
+                return false
+            }
+            fileLogger.append(LogLevel.INFO, "Sending request to: Remove Windows shortcuts ...")
+            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON, false)) {
+                fileLogger.append(LogLevel.ERROR, "Creating shortcuts with the Windows wrapper failed!")
+                return false
+            } else {
+                fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
+            }
+            return true
+        } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")
             return false
         }
@@ -407,12 +406,12 @@ class PyssaComponent: IComponent {
      *
      * @return True if component is successfully updated, false: Otherwise
      */
-    override fun update(): Boolean {
+    override suspend fun update(aSystemState: State<List<Boolean>>): Boolean {
         try {
-            if (checkPrerequisitesForUninstallation()) {
+            if (checkPrerequisitesForUninstallation(aSystemState)) {
                 uninstall()
             }
-            if (checkPrerequisitesForInstallation()) {
+            if (checkPrerequisitesForInstallation(aSystemState)) {
                 install()
             }
             return true
@@ -488,11 +487,19 @@ class PyssaComponent: IComponent {
      *
      * @return True if component can be installed, false: Otherwise
      */
-    override fun checkPrerequisitesForInstallation(): Boolean {
-        val tmpColabfoldComponent: ColabFoldComponent = ColabFoldComponent()
-        val tmpWslComponent: WslComponent = WslComponent()
-        if (tmpWslComponent.states.component1().isInstalled && tmpColabfoldComponent.states.component1().isInstalled) {
-            return true
+    override fun checkPrerequisitesForInstallation(aSystemState: State<List<Boolean>>): Boolean {
+        // 0 -> WSL2, 1 -> ColabFold
+        fileLogger.append(LogLevel.DEBUG, "These are the values for 0 -> ${aSystemState.value[0]} and 1 -> ${aSystemState.value[1]}")
+        if (aSystemState.value[0] && aSystemState.value[1]) {
+            val tmpWindowsPackage: File = File("${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip")
+            // First check if anything is stored offline
+            if (tmpWindowsPackage.exists()) {
+                return true
+            }
+            if (Utils.isInternetAvailable()) {
+                return true
+            }
+            return false
         } else {
             return false
         }
@@ -503,10 +510,8 @@ class PyssaComponent: IComponent {
      *
      * @return True if component can be uninstalled, false: Otherwise
      */
-    override fun checkPrerequisitesForUninstallation(): Boolean {
-        val tmpColabfoldComponent: ColabFoldComponent = ColabFoldComponent()
-        val tmpWslComponent: WslComponent = WslComponent()
-        if (tmpWslComponent.states.component1().isInstalled && tmpColabfoldComponent.states.component1().isInstalled) {
+    override fun checkPrerequisitesForUninstallation(aSystemState: State<List<Boolean>>): Boolean {
+        if (aSystemState.value[0] && aSystemState.value[1]) {
             return true
         } else {
             return false

@@ -5,6 +5,8 @@
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.compose.material/material-desktop/1.5.10/ca0d754ede3fce975a8df534828a1753642bc87e/material-desktop-1.5.10.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.compose.material/material-desktop/1.5.10/bcbd430b2a300a1761400ecc635ff1beac9042c5/material-desktop-1.5.10-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>

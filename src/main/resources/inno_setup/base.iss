@@ -33,8 +33,8 @@ Name: "{commonappdata}\IBCI\PySSA-Installer\tools"
 [Files]
 Source: "..\..\..\..\build\compose\binaries\main\app\ComponentInstaller\*"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\bin"; Flags: ignoreversion recursesubdirs createallsubdirs;
 Source: "..\scripts\*"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\scripts"; Flags: ignoreversion recursesubdirs createallsubdirs;
-Source: "..\..\..\..\WindowsWrapper\bin\Release\publish\WindowsWrapper.exe"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\tools"; Flags: ignoreversion recursesubdirs createallsubdirs;
-Source: "..\cmd_elevator\CmdElevator.exe"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\tools"; Flags: ignoreversion recursesubdirs createallsubdirs;
+Source: "..\..\..\..\WindowsWrapper\WindowsCmdElevator\bin\Release\net8.0\publish\win-x64\WindowsCmdElevator.exe"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\tools"; Flags: ignoreversion recursesubdirs createallsubdirs;
+Source: "..\..\..\..\WindowsWrapper\WindowsTasks\bin\Release\net8.0\publish\win-x64\WindowsTasks.exe"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\tools"; Flags: ignoreversion recursesubdirs createallsubdirs;
 Source: "..\assets\icon.ico"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\assets"; Flags: ignoreversion recursesubdirs createallsubdirs;
 Source: "..\version_history.json"; DestDir: "{commonappdata}\IBCI\PySSA-Installer"; Flags: ignoreversion recursesubdirs createallsubdirs;
 

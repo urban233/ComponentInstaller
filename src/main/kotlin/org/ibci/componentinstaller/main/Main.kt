@@ -19,6 +19,7 @@ import org.ibci.componentinstaller.model.util.VersionHelper
 import org.ibci.componentinstaller.model.util.VersionHistory
 import org.ibci.componentinstaller.model.util.definitions.PathDefinitions
 import org.ibci.componentinstaller.model.util.definitions.UrlDefinitions
+import org.ibci.componentinstaller.util.Utils
 import org.ibci.componentinstaller.util.logger.FileLogger
 import org.ibci.componentinstaller.util.logger.LogLevel
 
@@ -42,27 +43,33 @@ fun App(aController: MainWindowController) {
  */
 fun main(args: Array<String>) {
     val tmpFileLogger = FileLogger()
-    try {
-        tmpFileLogger.append(LogLevel.INFO, "Checking version of application ...")
-        val localVersionHistory: VersionHistory = VersionHelper.createVersionHistoryFromLocalFile(
-            PathDefinitions.PYSSA_INSTALLER_VERSION_HISTORY_JSON
-        )
-        val remoteVersionHistory: VersionHistory = VersionHelper.createVersionHistoryFromRemoteSource(
-            UrlDefinitions.PYSSA_INSTALLER_VERSION_HISTORY
-        )
-        if (remoteVersionHistory.compareAgainstLatestVersionOfHistory(localVersionHistory.getLatestVersion()) == -1) {
-            // An update is available!
-            if (promptAndUpdate()) {
-                return
+    var windowTitle = "PySSA-Installer"
+    if (Utils.isInternetAvailable()) {
+        try {
+            tmpFileLogger.append(LogLevel.INFO, "Checking version of application ...")
+            val localVersionHistory: VersionHistory = VersionHelper.createVersionHistoryFromLocalFile(
+                PathDefinitions.PYSSA_INSTALLER_VERSION_HISTORY_JSON
+            )
+            val remoteVersionHistory: VersionHistory = VersionHelper.createVersionHistoryFromRemoteSource(
+                UrlDefinitions.PYSSA_INSTALLER_VERSION_HISTORY
+            )
+            if (remoteVersionHistory.compareAgainstLatestVersionOfHistory(localVersionHistory.getLatestVersion()) == -1) {
+                // An update is available!
+                if (promptAndUpdate()) {
+                    return
+                }
             }
+        } catch (ex: Exception) {
+            tmpFileLogger.append(LogLevel.CRITICAL, "The exception ${ex} occurred. The program has to exit.")
+            JOptionPane.showMessageDialog(null, "An error occurred. The application will now exit.", "Critical Error", JOptionPane.ERROR_MESSAGE, UIManager.getIcon("OptionPane.errorIcon"))
+            return
         }
-    } catch (ex: Exception) {
-        tmpFileLogger.append(LogLevel.CRITICAL, "The exception ${ex} occurred. The program has to exit.")
-        JOptionPane.showMessageDialog(null, "An error occurred. The application will now exit.", "Critical Error", JOptionPane.ERROR_MESSAGE, UIManager.getIcon("OptionPane.errorIcon"))
-        return
+    } else {
+        windowTitle = "PySSA-Installer (Offline Mode)"
     }
+
     if (args.isEmpty()) {
-        launchGui()
+        launchGui(windowTitle)
     } else {
         launchCli(args)
     }
@@ -72,13 +79,13 @@ fun main(args: Array<String>) {
  * Launches the GUI installer application
  *
  */
-fun launchGui() = application {
+fun launchGui(aWindowTitle: String) = application {
     val tmpFileLogger = FileLogger()
     tmpFileLogger.append(LogLevel.INFO, "Starting GUI ...")
     tmpFileLogger.append(LogLevel.INFO, "Starting application ...")
-    val tmpWindowState = rememberWindowState(width = 650.dp, height = 750.dp)
+    val tmpWindowState = rememberWindowState(width = 675.dp, height = 750.dp)
     Window(
-        title = "PySSA-Installer",
+        title = aWindowTitle,
         state = tmpWindowState,
         icon = painterResource("assets/installer_24_dpi.png"),
         onCloseRequest = ::exitApplication
@@ -107,8 +114,8 @@ fun launchCli(args: Array<String>) {
     }
     // A null check is implemented above, therefore the line below is only used to satisfy the compiler
     val tmpComponent: IComponent = allComponents[args[0]] ?: ExampleComponent("Generic")
-    CliOperations.installComponent(tmpComponent, args, tmpFileLogger) // Checks internally if the component needs to be installed
-    CliOperations.uninstallComponent(tmpComponent, args, tmpFileLogger) // Checks internally if the component needs to be uninstalled
+    //CliOperations.installComponent(tmpComponent, args, tmpFileLogger) // Checks internally if the component needs to be installed
+    //CliOperations.uninstallComponent(tmpComponent, args, tmpFileLogger) // Checks internally if the component needs to be uninstalled
 }
 
 /**

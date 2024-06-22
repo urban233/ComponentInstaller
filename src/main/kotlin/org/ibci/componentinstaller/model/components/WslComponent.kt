@@ -1,15 +1,18 @@
 package org.ibci.componentinstaller.model.components
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.Path
-import kotlinx.coroutines.Job
 import org.ibci.componentinstaller.gui.ComponentState
 import org.ibci.componentinstaller.model.util.CustomProcessBuilder
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
 import org.ibci.componentinstaller.model.util.definitions.PathDefinitions
+import org.ibci.componentinstaller.util.OperationTypeDefinitions
+import org.ibci.componentinstaller.util.RequestData
+import org.ibci.componentinstaller.util.Utils
 import org.ibci.componentinstaller.util.logger.FileLogger
 import org.ibci.componentinstaller.util.logger.LogLevel
+import org.ibci.extension.communication.Communicator
 import java.io.File
 
 class WslComponent : IComponent {
@@ -18,6 +21,11 @@ class WslComponent : IComponent {
      * File logger of this class
      */
     private val fileLogger: FileLogger = FileLogger()
+    /**
+     * The communicator for the windows wrapper
+     *
+     */
+    private val communicator = Communicator()
     /**
      * The component name
      */
@@ -47,60 +55,62 @@ class WslComponent : IComponent {
         anInstallationLocation = ""
     )
 
-    override var states: MutableState<ComponentState> = mutableStateOf(
-        ComponentState(
-            isInstalled = isInstalled(),
-            isUpdatable = hasUpdate(),
-            componentJob = Job(),
-            isComponentJobRunning = false
-        )
+    override var states: ComponentState = ComponentState(
+        isInstalled(),
+        hasUpdate()
     )
-
-    /**
-     * The installation state
-     *
-     * This should be seen as a private property, therefore the leading underscore.
-     */
-    override var installedState: MutableState<Boolean> = mutableStateOf(false)
-
-    /**
-     * The update state
-     *
-     * This should be seen as a private property, therefore the leading underscore.
-     */
-    override var updatableState: MutableState<Boolean> = mutableStateOf(false)
     //</editor-fold>
-
-    init {
-        installedState.value = isInstalled()
-        updatableState.value = hasUpdate()
-    }
 
     /**
      * Install WSL2 component
      *
      * @return True if component is successfully installed, false: Otherwise
      */
-    override fun install(): Boolean {
+    override suspend fun install(): Boolean {
         try {
-            val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
-            tmpCustomProcessBuilder.runCommand(
-                anExecutable = PathDefinitions.CMD_ELEVATOR_EXE,
-                aCommand = arrayOf("cmd.exe", "/C", "wsl", "--install", "--no-distribution")
+            if (!Utils.isInternetAvailable()) {
+                return false
+            }
+            val tmpData = RequestData(
+                OperationTypeDefinitions.RUN_CMD_COMMAND,
+                arrayOf("wsl --install --no-distribution")
             )
+            if (!tmpData.writeToJsonFile()) {
+                fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
+                return false
+            }
+            fileLogger.append(LogLevel.INFO, "Sending request to: Install WSL2 without any distro Windows shortcuts ...")
+            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON, true)) {
+                fileLogger.append(LogLevel.ERROR, "Installing WSL2 without any distro with the Windows wrapper failed!")
+                return false
+            } else {
+                fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
+            }
             return true
         } catch (ex: Exception) {
-            fileLogger.append(LogLevel.ERROR, ex.toString())
+            fileLogger.append(LogLevel.ERROR, "$ex")
             return false
         }
+
+//        try {
+//            val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
+//            tmpCustomProcessBuilder.runCommand(
+//                anExecutable = PathDefinitions.CMD_ELEVATOR_EXE,
+//                aCommand = arrayOf("cmd.exe", "/C", "wsl", "--install", "--no-distribution")
+//            )
+//            return true
+//        } catch (ex: Exception) {
+//            fileLogger.append(LogLevel.ERROR, ex.toString())
+//            return false
+//        }
     }
 
     /**
-     * Uninstall WSL2 component
+     * Uninstall WSL2 component NOT NECESSARY ANYMORE!!!
      *
      * @return True if component is successfully uninstalled, false: Otherwise
      */
-    override fun uninstall(): Boolean {
+    override suspend fun uninstall(): Boolean {
         try {
             val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
             tmpCustomProcessBuilder.runCommand(
@@ -123,7 +133,7 @@ class WslComponent : IComponent {
      *
      * @return True if component is successfully updated, false: Otherwise
      */
-    override fun update(): Boolean {
+    override suspend fun update(aSystemState: State<List<Boolean>>): Boolean {
         // The update process is handled by the OS and the internal update state is always false,
         // therefore true is returned
         return true
@@ -162,11 +172,10 @@ class WslComponent : IComponent {
      *
      * @return True if component can be installed, false: Otherwise
      */
-    override fun checkPrerequisitesForInstallation(): Boolean {
-        val tmpColabfoldComponent: ColabFoldComponent = ColabFoldComponent()
-        val tmpPyssaComponent: PyssaComponent = PyssaComponent()
-        if (!tmpPyssaComponent.states.component1().isInstalled && !tmpColabfoldComponent.states.component1().isInstalled) {
-            return true
+    override fun checkPrerequisitesForInstallation(aSystemState: State<List<Boolean>>): Boolean {
+        // 2 -> PySSA, 1 -> ColabFold
+        if (!aSystemState.value[2] && !aSystemState.value[1]) {
+            return Utils.isInternetAvailable()
         } else {
             return false
         }
@@ -177,14 +186,7 @@ class WslComponent : IComponent {
      *
      * @return True if component can be uninstalled, false: Otherwise
      */
-    override fun checkPrerequisitesForUninstallation(): Boolean {
+    override fun checkPrerequisitesForUninstallation(aSystemState: State<List<Boolean>>): Boolean {
         return false
-//        val tmpColabfoldComponent: ColabFoldComponent = ColabFoldComponent()
-//        val tmpPyssaComponent: PyssaComponent = PyssaComponent()
-//        if (!tmpPyssaComponent.isInstalled() && !tmpColabfoldComponent.isInstalled()) {
-//            return true
-//        } else {
-//            return false
-//        }
     }
 }

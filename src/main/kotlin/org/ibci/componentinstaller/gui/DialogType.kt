@@ -8,4 +8,5 @@ enum class DialogType {
     UNINSTALL_FAILED,
     UPDATE_SUCCESSFUL,
     UPDATE_FAILED,
+    CONFIRM_UNINSTALL
 }

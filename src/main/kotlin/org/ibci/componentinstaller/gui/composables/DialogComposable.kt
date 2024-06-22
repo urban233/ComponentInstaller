@@ -6,70 +6,52 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.ibci.componentinstaller.gui.DialogType
 import org.ibci.componentinstaller.main.MainWindowController
 import org.ibci.componentinstaller.model.components.IComponent
 
 object DialogComposable {
     @Composable
-    fun ConfirmUninstallDialog(
-        aComponent: IComponent,
-        aController: MainWindowController,
-        aShowConfirmUninstallDialogState: MutableState<Boolean>,
-        anIsInstalledState: MutableState<Boolean>,
-        anIsJobRunningState: MutableState<Boolean>,
-        anIsComponentJobRunning: MutableState<Boolean>,
-        aProgressDescription: MutableState<String>,
-        aComponentJob: MutableState<Job>
+    fun ConfirmationDialog(
+        title: String,
+        message: String,
+        onConfirm: () -> Unit,
+        onDismiss: () -> Unit
     ) {
-        // Dialog that appears when dialogVisible is true
-        val coroutineScope = rememberCoroutineScope()
-        if (aShowConfirmUninstallDialogState.value) {
-            AlertDialog(
-                onDismissRequest = { aShowConfirmUninstallDialogState.value = false },
-                title = {
-                    Text("Confirm Uninstall")
-                },
-                text = {
-                    Text("Are you sure you want to uninstall?")
-                },
-                confirmButton = {
-                    Row (modifier = Modifier.padding(12.dp)) {
-                        LowLevelComposable.standardButton(
-                            onClickFunction = {
-                                aShowConfirmUninstallDialogState.value = false
-                                aComponentJob.value.cancel()
-                                aComponentJob.value = coroutineScope.launch {
-                                    anIsJobRunningState.value = true
-                                    anIsComponentJobRunning.value = true
-                                    aController.uninstallComponent(aComponent) { tmpProgressDescription ->
-                                            withContext(context = Dispatchers.Main) {
-                                                aProgressDescription.value = tmpProgressDescription
-                                        }
-                                    }
-                                    anIsInstalledState.value = aComponent.isInstalled()
-                                    anIsComponentJobRunning.value = false
-                                    anIsJobRunningState.value = false
-                                }
-                            },
-                            aText = "Uninstall",
-                            isEnabled = true)
-                        LowLevelComposable.outlinedStandardButton(
-                            onClickFunction = {
-                                aShowConfirmUninstallDialogState.value = false
-                            },
-                            aText = "Cancel",
-                            isEnabled = true
-                        )
-                    }
-
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                LowLevelComposable.standardText(
+                    aText = title,
+                    aFontSize = 15.sp,
+                    aFontWeight = FontWeight.Bold,
+                    aFontColor = Color.Black
+                ) },
+            text = {
+                LowLevelComposable.standardText(
+                    aText = message,
+                    aFontSize = 13.sp
+                ) },
+            buttons = {
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                ) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    LowLevelComposable.standardButton(onClickFunction = onConfirm, "OK", true)
+                    Spacer(modifier = Modifier.weight(0.05f))
+                    LowLevelComposable.outlinedStandardButton(onClickFunction = onDismiss, "Cancel", true)
                 }
-            )
-        }
+            }
+        )
     }
 
     @Composable
@@ -77,11 +59,17 @@ object DialogComposable {
         AlertDialog(
             onDismissRequest = { onCloseRequest() },
             title = {
-                Text(title)
-            },
+                LowLevelComposable.standardText(
+                    aText = title,
+                    aFontSize = 15.sp,
+                    aFontWeight = FontWeight.Bold
+                ) },
             text = {
                 Column {
-                    Text(content)
+                    LowLevelComposable.standardText(
+                        aText = content,
+                        aFontSize = 13.sp
+                    )
                 }
             },
             confirmButton = {

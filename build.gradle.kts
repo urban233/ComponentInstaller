@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -97,8 +98,50 @@ tasks.register("generateInnoSetupScript") {
 }
 
 tasks.register<Exec>("packageWithInnoSetup") {
-    dependsOn("updateVersionHistory", "generateInnoSetupScript", "createDistributable")
+    dependsOn("updateVersionHistory", "generateInnoSetupScript", "publishWindowsCmdElevator", "publishWindowsTasks", "createDistributable")
     val innoSetupPath = "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe"
     val setupScript = file("src/main/resources/inno_setup/base_with_version.iss")
+    commandLine(innoSetupPath, setupScript.absolutePath)
+}
+
+// Function to configure the publishing task
+fun configurePublishTask(taskName: String, projectDir: String) {
+    tasks.register<Exec>(taskName) {
+        // Define the command to publish the project
+        val pubxmlFile = file("$projectDir/Properties/PublishProfiles/FolderProfile.pubxml")
+        commandLine("dotnet", "publish", projectDir, "/p:PublishProfile=$pubxmlFile")
+
+        // Setting the working directory
+        workingDir = file(projectDir)
+
+        // Capture and log the output
+        val outputStream = ByteArrayOutputStream()
+        standardOutput = outputStream
+        errorOutput = outputStream
+        isIgnoreExitValue = true
+
+        doLast {
+            println(outputStream.toString())
+        }
+    }
+}
+
+configurePublishTask("publishWindowsCmdElevator", "$projectDir/WindowsWrapper/WindowsCmdElevator")
+configurePublishTask("publishWindowsTasks", "$projectDir/WindowsWrapper/WindowsTasks")
+
+
+tasks.register("generateOfflineInnoSetupScript") {
+    doLast {
+        val template = file("src/main/resources/inno_setup/baseOffline.iss").readText()
+        val processedScript = template.replace("{#AppVersion}", version.toString())
+        file("src/main/resources/inno_setup/base_offline_with_version.iss").writeText(processedScript)
+    }
+}
+
+tasks.register<Exec>("packageWithInnoSetupForOffline") {
+    // IMPORTANT: This task does NOT update the version number of the installer, to do this please use the task packageWithInnoSetup!
+    dependsOn("generateOfflineInnoSetupScript", "publishWindowsCmdElevator", "publishWindowsTasks", "createDistributable")
+    val innoSetupPath = "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe"
+    val setupScript = file("src/main/resources/inno_setup/base_offline_with_version.iss")
     commandLine(innoSetupPath, setupScript.absolutePath)
 }

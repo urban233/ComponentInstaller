@@ -29,11 +29,15 @@ object PathDefinitions {
     /**
      * Filepath of the CmdElevator tool
      */
-    const val CMD_ELEVATOR_EXE: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\tools\\CmdElevator.exe"
+    const val CMD_ELEVATOR_EXE: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\tools\\WindowsCmdElevator.exe"
     /**
-     * Filepath of the offline win package zip archive
+     * Filepath of the almalinux rootfs
      */
-    const val PYSSA_INSTALLER_OFFLINE_WIN_PACKAGE_ZIP: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\offline_win_package.zip"
+    const val PYSSA_INSTALLER_ALMALINUX_TAR: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\temp\\alma-colabfold-9-rootfs.tar"
+    /**
+     * Filepath of the windows package zip archive
+     */
+    const val PYSSA_INSTALLER_WINDOWS_PACKAGE_ZIP: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\windows_package.zip"
     /**
      * Path of the PySSA rich client
      *
@@ -86,7 +90,7 @@ object PathDefinitions {
      * Filepath of the windows wrapper executable file
      *
      */
-    const val WINDOWS_WRAPPER_EXE: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\tools\\WindowsWrapper.exe"
+    const val WINDOWS_TASKS_EXE: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\tools\\WindowsTasks.exe"
     /**
      * Filepath of the exchange json file
      *

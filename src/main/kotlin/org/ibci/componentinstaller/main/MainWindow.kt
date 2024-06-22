@@ -21,18 +21,31 @@ import org.ibci.componentinstaller.model.components.ColabFoldComponent
 import org.ibci.componentinstaller.model.components.ExampleComponent
 import org.ibci.componentinstaller.model.components.PyssaComponent
 import org.ibci.componentinstaller.model.components.WslComponent
+import org.ibci.componentinstaller.util.logger.FileLogger
+import org.ibci.componentinstaller.util.logger.LogLevel
 
 /**
  * Describes the outline of the main window
  */
 @Composable
 fun MainWindow(aController: MainWindowController) {
+    val tmpFileLogger = FileLogger()
+    tmpFileLogger.append(LogLevel.DEBUG, "Running composable function: MainWindow")
     val scrollState = rememberScrollState()
     val components = remember { mutableStateListOf(
         WslComponent(),
         ColabFoldComponent(),
         PyssaComponent()
     ) }
+    val systemState = derivedStateOf {
+        components.map { component -> component.states.isInstalled.value }
+    }
+    // These components are useful for debug purposes
+//    val components = remember { mutableStateListOf(
+//        ExampleComponent("WSL2"),
+//        ExampleComponent("ColabFold"),
+//        ExampleComponent("PySSA")
+//    ) }
     val isAvailableExpanded = remember { mutableStateOf(true) }
     val isJobRunning = remember { mutableStateOf(false) }
 
@@ -45,11 +58,12 @@ fun MainWindow(aController: MainWindowController) {
             title = "Installed",
             addComponents = {
                 for (tmpComponent in components) {
-                    if (tmpComponent.states.value.isInstalled) {
+                    if (tmpComponent.states.isInstalled.value) {
                         ComposableCollection.componentItem(
                             tmpComponent,
                             aController,
-                            isJobRunning
+                            isJobRunning,
+                            systemState
                         )
                     }
                 }
@@ -60,11 +74,12 @@ fun MainWindow(aController: MainWindowController) {
             expandedState = isAvailableExpanded,
             addComponents = {
                 for (tmpComponent in components) {
-                    if (!tmpComponent.states.value.isInstalled) {
+                    if (!tmpComponent.states.isInstalled.value) {
                         ComposableCollection.componentItem(
                             tmpComponent,
                             aController,
-                            isJobRunning
+                            isJobRunning,
+                            systemState
                         )
                     }
                 }

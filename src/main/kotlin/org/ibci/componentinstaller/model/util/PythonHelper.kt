@@ -38,7 +38,7 @@ class PythonHelper {
                 return false
             }
             fileLogger.append(LogLevel.INFO, "Sending request to: Run command in cmd ...")
-            if (!tmpCommunicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
+            if (!tmpCommunicator.sendRequest(PathDefinitions.EXCHANGE_JSON, false)) {
                 fileLogger.append(LogLevel.ERROR, "Running the cmd command in the Windows wrapper failed!")
                 return false
             } else {

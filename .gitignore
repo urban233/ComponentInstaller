@@ -66,9 +66,19 @@ bin/
 ### Mac OS ###
 .DS_Store
 
+
+###### --- Custom paths --- ######
 ### WindowsWrapper Project ###
 WindowsWrapper/.idea
 WindowsWrapper/.vs
-WindowsWrapper/bin
-WindowsWrapper/obj
+WindowsWrapper/WindowsCmdElevator/bin
+WindowsWrapper/WindowsCmdElevator/obj
+WindowsWrapper/WindowsTasks/bin
+WindowsWrapper/WindowsTasks/obj
 
+### Inno Setup ###
+src/main/resources/inno_setup/out/*
+
+### External resources ###
+offline_resources/windows_package.zip
+offline_resources/alma-colabfold-9-rootfs.tar
