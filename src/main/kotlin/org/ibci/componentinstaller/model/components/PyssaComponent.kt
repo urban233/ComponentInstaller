@@ -8,8 +8,11 @@ import org.ibci.componentinstaller.model.util.*
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
 import org.ibci.componentinstaller.model.util.definitions.PathDefinitions
 import org.ibci.componentinstaller.model.util.definitions.UrlDefinitions
+import org.ibci.componentinstaller.util.OperationTypeDefinitions
+import org.ibci.componentinstaller.util.RequestData
 import org.ibci.componentinstaller.util.logger.FileLogger
 import org.ibci.componentinstaller.util.logger.LogLevel
+import org.ibci.extension.communication.Communicator
 
 import java.io.File
 import java.net.InetAddress
@@ -28,6 +31,11 @@ class PyssaComponent: IComponent {
      *
      */
     private val fileLogger = FileLogger()
+    /**
+     * The communicator for the windows wrapper
+     *
+     */
+    private val communicator = Communicator()
     /**
      * The component name
      *
@@ -187,42 +195,32 @@ class PyssaComponent: IComponent {
      * @return True if operation is successful, false: Otherwise
      */
     private fun unzipWindowsPackage(): Boolean {
-        val tmpZipFilePath: String = "${PathDefinitions.PYSSA_PROGRAM_DIR}/windows_package.zip"
-        val tmpExtractPath: String = PathDefinitions.PYSSA_PROGRAM_DIR
+        val tmpZipFilePath: File = File("${PathDefinitions.PYSSA_PROGRAM_DIR}\\windows_package.zip")
+        val tmpExtractPath: File = File(PathDefinitions.PYSSA_PROGRAM_DIR)
 
-        // Ensure the zip archive exists
-        if (!File(tmpZipFilePath).exists()) {
-            fileLogger.append(LogLevel.ERROR, "The windows_package.zip file is missing! Exit installation process now.")
-            return false
-        }
-
-        // Unzip the archive
         try {
-            ZipFile(tmpZipFilePath).use { zip ->
-                zip.entries().asSequence().forEach { entry ->
-                    val tmpOutputFile: File = File(tmpExtractPath, entry.name)
-                    if (entry.isDirectory) {
-                        tmpOutputFile.mkdirs()
-                    } else {
-                        tmpOutputFile.outputStream().use { output ->
-                            zip.getInputStream(entry).use { input ->
-                                input.copyTo(output)
-                            }
-                        }
-                    }
-                }
+            val tmpData = RequestData(
+                OperationTypeDefinitions.UNZIP_ARCHIVE,
+                arrayOf(
+                    tmpZipFilePath.absolutePath,
+                    tmpExtractPath.absolutePath
+                )
+            )
+            if (!tmpData.writeToJsonFile()) {
+                fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
+                return false
             }
+            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
+                fileLogger.append(LogLevel.ERROR, "Unzip of windows_package.zip with the Windows wrapper failed!")
+                return false
+            } else {
+                fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
+            }
+            return true
         } catch (ex: Exception) {
-            fileLogger.append(LogLevel.ERROR, "Extraction ended with error: ${ex.message}")
+            fileLogger.append(LogLevel.ERROR, "$ex")
             return false
         }
-        try {
-            File(tmpZipFilePath).deleteRecursively()
-        } catch (ex: Exception) {
-            fileLogger.append(LogLevel.ERROR, "Removing the offline windows package ended with error: ${ex.message}")
-            return false
-        }
-        return true
     }
 
     /**
@@ -232,8 +230,24 @@ class PyssaComponent: IComponent {
      */
     private fun createWindowsShortcuts(): Boolean {
         try {
-            val tmpSystemEntryHandler: SystemEntryHandler = SystemEntryHandler()
-            tmpSystemEntryHandler.createShortcuts()
+            val tmpData = RequestData(
+                OperationTypeDefinitions.CREATE_SHORTCUTS,
+                arrayOf(
+                    PathDefinitions.PYSSA_WINDOW_ARRANGEMENT_EXE,
+                    "PySSA",
+                    PathDefinitions.PYSSA_LOGO_ICO
+                )
+            )
+            if (!tmpData.writeToJsonFile()) {
+                fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
+                return false
+            }
+            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
+                fileLogger.append(LogLevel.ERROR, "Creating shortcuts with the Windows wrapper failed!")
+                return false
+            } else {
+                fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
+            }
             return true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")

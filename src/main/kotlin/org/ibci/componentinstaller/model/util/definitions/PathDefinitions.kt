@@ -87,4 +87,9 @@ object PathDefinitions {
      *
      */
     const val WINDOWS_WRAPPER_EXE: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\tools\\WindowsWrapper.exe"
+    /**
+     * Filepath of the exchange json file
+     *
+     */
+    const val EXCHANGE_JSON: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\tools\\exchange.json"
 }

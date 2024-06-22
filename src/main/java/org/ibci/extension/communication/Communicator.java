@@ -11,9 +11,9 @@ public class Communicator {
     public String lastReply;
 
     public boolean sendRequest(String aRequest) {
-        if (!startWindowsWrapper()) {
-            return false;
-        }
+//        if (!startWindowsWrapper()) {
+//            return false;
+//        }
         try (ZContext context = new ZContext()) {
             // Socket to talk to clients
             System.out.println("Creating REQ socket ...");
