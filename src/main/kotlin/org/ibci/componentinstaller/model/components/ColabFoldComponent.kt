@@ -112,46 +112,54 @@ class ColabFoldComponent: IComponent {
         fileLogger.append(LogLevel.INFO, "Start AlmaLinux9 distribution import.")
 
         try {
+            communicator.startWindowsWrapper(false)
             val tmpData = RequestData(
                 OperationTypeDefinitions.RUN_CMD_COMMAND,
                 arrayOf("wsl --import almaColabfold9 C:\\ProgramData\\localcolabfold\\storage C:\\ProgramData\\IBCI\\PySSA-Installer\\temp\\alma-colabfold-9-rootfs.tar")
             )
             if (!tmpData.writeToJsonFile()) {
                 fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
+                stopCommunicator()
                 return false
             }
             fileLogger.append(LogLevel.INFO, "Sending request to: Importing the AlmaLinux distribution ...")
-            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON, false)) {
+            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
                 fileLogger.append(LogLevel.ERROR, "Importing the AlmaLinux distribution with the Windows wrapper failed!")
+                stopCommunicator()
                 return false
             } else {
                 fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
             }
+            stopCommunicator()
             return true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")
+            stopCommunicator()
             return false
         }
+    }
 
-//        try {
-//            val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
-//            tmpCustomProcessBuilder.runCommand(
-//                arrayOf(
-//                    "/C", "wsl", "--import", "almaColabfold9",
-//                    "${PathDefinitions.LOCAL_COLABFOLD_DIR}\\storage",
-//                    tmpTarFile.absolutePath.toString()
-//                )
-//            )
-//
-//            fileLogger.append(LogLevel.INFO, "WSL2 command finished without errors. Colabfold successfully imported.")
-//            if (isInstalled()){
-//                return true
-//            }
-//            return true
-//        } catch (ex: Exception) {
-//            fileLogger.append(LogLevel.ERROR, "Process ended with error: $ex")
-//            return false
-//        }
+    /**
+     * TODO: This method needs to be implemented in the Communicator class in src/main/java!!
+     * This is only done to make it work for now.
+     */
+    fun stopCommunicator() : Boolean {
+        val tmpData = RequestData(
+            OperationTypeDefinitions.CLOSE_CONNECTION,
+            arrayOf("Close connection.")
+        )
+        if (!tmpData.writeToJsonFile()) {
+            fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
+            return false
+        }
+        fileLogger.append(LogLevel.INFO, "Sending request to: Close connection ...")
+        if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
+            fileLogger.append(LogLevel.ERROR, "Close connection failed!")
+            return false
+        } else {
+            fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
+            return true
+        }
     }
 
     /**
@@ -168,11 +176,14 @@ class ColabFoldComponent: IComponent {
             )
             if (!tmpData.writeToJsonFile()) {
                 fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
+                stopCommunicator()
                 return false
             }
             fileLogger.append(LogLevel.INFO, "Sending request to: Importing the AlmaLinux distribution ...")
-            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON, false)) {
+            communicator.startWindowsWrapper(false)
+            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
                 fileLogger.append(LogLevel.ERROR, "Importing the AlmaLinux distribution with the Windows wrapper failed!")
+                stopCommunicator()
                 return false
             } else {
                 fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
@@ -182,10 +193,12 @@ class ColabFoldComponent: IComponent {
                         localColabfoldPath.deleteRecursively()
                     }
                 }
+                stopCommunicator()
                 return true
             }
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")
+            stopCommunicator()
             return false
         }
     }

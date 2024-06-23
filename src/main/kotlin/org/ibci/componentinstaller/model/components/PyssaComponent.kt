@@ -5,6 +5,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Path
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import org.ibci.componentinstaller.gui.ComponentState
 import org.ibci.componentinstaller.model.util.*
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
@@ -87,38 +88,72 @@ class PyssaComponent: IComponent {
     override suspend fun install(): Boolean {
         // First installer prototype has only an online version, therefore no offline package is needed but an internet connection!
         try {
+            communicator.startWindowsWrapper(false)
             val tmpWindowsPackage: File = File(PathDefinitions.PYSSA_INSTALLER_WINDOWS_PACKAGE_ZIP)
             // First check if anything is stored offline
             if (tmpWindowsPackage.exists()) {
                 if (!copyWindowsPackage()) {
+                    stopCommunicator() // TODO: This is bad and needs to be fixed in the future!
                     return false
                 }
             } else {
                 // No offline files found & try to download
                 if (Utils.isInternetAvailable()) {
                     if (!downloadWindowsPackage()) {
+                        stopCommunicator()
                         return false
                     }
                 } else {
+                    stopCommunicator()
                     return false
                 }
             }
             if (!unzipWindowsPackage()) {
+                stopCommunicator()
                 return false
             }
             if (!createWindowsShortcuts()) {
+                stopCommunicator()
                 return false
             }
             if (!setupPythonEnvironment()) {
+                stopCommunicator()
                 return false
             }
             if (!postInstallCleanup()) {
+                stopCommunicator()
                 return false
             }
             return true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")
+            stopCommunicator()
             return false
+        } finally {
+            stopCommunicator()
+        }
+    }
+
+    /**
+     * TODO: This method needs to be implemented in the Communicator class in src/main/java!!
+     * This is only done to make it work for now.
+     */
+    fun stopCommunicator() : Boolean {
+        val tmpData = RequestData(
+            OperationTypeDefinitions.CLOSE_CONNECTION,
+            arrayOf("Close connection.")
+        )
+        if (!tmpData.writeToJsonFile()) {
+            fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
+            return false
+        }
+        fileLogger.append(LogLevel.INFO, "Sending request to: Close connection ...")
+        if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
+            fileLogger.append(LogLevel.ERROR, "Close connection failed!")
+            return false
+        } else {
+            fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
+            return true
         }
     }
 
@@ -175,7 +210,7 @@ class PyssaComponent: IComponent {
      *
      * @return True if operation is successful, false: Otherwise
      */
-    private fun unzipWindowsPackage(): Boolean {
+    private suspend fun unzipWindowsPackage(): Boolean {
         val tmpZipFilePath: File = File(PathDefinitions.PYSSA_INSTALLER_WINDOWS_PACKAGE_ZIP)
         val tmpExtractPath: File = File(PathDefinitions.PYSSA_PROGRAM_DIR)
 
@@ -192,7 +227,7 @@ class PyssaComponent: IComponent {
                 return false
             }
             fileLogger.append(LogLevel.INFO, "Sending request to: Unzip windows_package.zip ...")
-            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON, false)) {
+            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
                 fileLogger.append(LogLevel.ERROR, "Unzip of windows_package.zip with the Windows wrapper failed!")
                 return false
             } else {
@@ -210,7 +245,7 @@ class PyssaComponent: IComponent {
      *
      * @return True if operation is successful, false: Otherwise
      */
-    private fun createWindowsShortcuts(): Boolean {
+    private suspend fun createWindowsShortcuts(): Boolean {
         try {
             val tmpData = RequestData(
                 OperationTypeDefinitions.CREATE_SHORTCUTS,
@@ -225,7 +260,7 @@ class PyssaComponent: IComponent {
                 return false
             }
             fileLogger.append(LogLevel.INFO, "Sending request to: Create Windows shortcuts ...")
-            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON, false)) {
+            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
                 fileLogger.append(LogLevel.ERROR, "Creating shortcuts with the Windows wrapper failed!")
                 return false
             } else {
@@ -345,20 +380,24 @@ class PyssaComponent: IComponent {
      */
     override suspend fun uninstall(): Boolean {
         try {
+            communicator.startWindowsWrapper(false)
             removeShortcuts()
             File(PathDefinitions.PYSSA_PROGRAM_DIR).deleteRecursively()
-            return true
         } catch (ex: AccessDeniedException) {
             fileLogger.append(LogLevel.ERROR, "There is a filesystem access violation. See this: $ex")
+            stopCommunicator()
             return false
         } catch (ex: Exception) {
             // Error occurred during one of the function calls, therefore return false
             fileLogger.append(LogLevel.ERROR, "$ex")
+            stopCommunicator()
             return false
         }
+        stopCommunicator()
+        return true
     }
 
-    private fun removeShortcuts() : Boolean {
+    private suspend fun removeShortcuts() : Boolean {
         try {
             val tmpData = RequestData(OperationTypeDefinitions.REMOVE_SHORTCUTS, arrayOf("PySSA"))
             if (!tmpData.writeToJsonFile()) {
@@ -366,7 +405,7 @@ class PyssaComponent: IComponent {
                 return false
             }
             fileLogger.append(LogLevel.INFO, "Sending request to: Remove Windows shortcuts ...")
-            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON, false)) {
+            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
                 fileLogger.append(LogLevel.ERROR, "Creating shortcuts with the Windows wrapper failed!")
                 return false
             } else {

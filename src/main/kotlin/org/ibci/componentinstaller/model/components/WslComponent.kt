@@ -71,38 +71,54 @@ class WslComponent : IComponent {
             if (!Utils.isInternetAvailable()) {
                 return false
             }
+            communicator.startWindowsWrapper(true)
             val tmpData = RequestData(
                 OperationTypeDefinitions.RUN_CMD_COMMAND,
                 arrayOf("wsl --install --no-distribution")
             )
             if (!tmpData.writeToJsonFile()) {
                 fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
+                stopCommunicator()
                 return false
             }
             fileLogger.append(LogLevel.INFO, "Sending request to: Install WSL2 without any distro Windows shortcuts ...")
-            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON, true)) {
+            if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
                 fileLogger.append(LogLevel.ERROR, "Installing WSL2 without any distro with the Windows wrapper failed!")
+                stopCommunicator()
                 return false
             } else {
                 fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
             }
-            return true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")
+            stopCommunicator()
             return false
         }
+        stopCommunicator()
+        return true
+    }
 
-//        try {
-//            val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
-//            tmpCustomProcessBuilder.runCommand(
-//                anExecutable = PathDefinitions.CMD_ELEVATOR_EXE,
-//                aCommand = arrayOf("cmd.exe", "/C", "wsl", "--install", "--no-distribution")
-//            )
-//            return true
-//        } catch (ex: Exception) {
-//            fileLogger.append(LogLevel.ERROR, ex.toString())
-//            return false
-//        }
+    /**
+     * TODO: This method needs to be implemented in the Communicator class in src/main/java!!
+     * This is only done to make it work for now.
+     */
+    fun stopCommunicator() : Boolean {
+        val tmpData = RequestData(
+            OperationTypeDefinitions.CLOSE_CONNECTION,
+            arrayOf("Close connection.")
+        )
+        if (!tmpData.writeToJsonFile()) {
+            fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
+            return false
+        }
+        fileLogger.append(LogLevel.INFO, "Sending request to: Close connection ...")
+        if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
+            fileLogger.append(LogLevel.ERROR, "Close connection failed!")
+            return false
+        } else {
+            fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
+            return true
+        }
     }
 
     /**
