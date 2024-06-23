@@ -77,8 +77,9 @@ WindowsWrapper/WindowsTasks/bin
 WindowsWrapper/WindowsTasks/obj
 
 ### Inno Setup ###
-src/main/resources/inno_setup/out/*
+deployment/inno_setup/out/*
+deployment/inno_setup/src/*
 
 ### External resources ###
-offline_resources/windows_package.zip
-offline_resources/alma-colabfold-9-rootfs.tar
+deployment/offline_resources/windows_package.zip
+deployment/offline_resources/alma-colabfold-9-rootfs.tar

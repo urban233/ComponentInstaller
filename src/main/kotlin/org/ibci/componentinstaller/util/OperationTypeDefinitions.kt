@@ -5,5 +5,6 @@ object OperationTypeDefinitions {
     val CREATE_SHORTCUTS = 1
     val REMOVE_SHORTCUTS = 2
     val RUN_CMD_COMMAND = 3
+    val CHECK_WSL_INSTALLATION = 4
     val CLOSE_CONNECTION = 99
 }

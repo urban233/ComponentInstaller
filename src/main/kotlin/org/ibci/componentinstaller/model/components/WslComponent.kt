@@ -3,6 +3,7 @@ package org.ibci.componentinstaller.model.components
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import kotlinx.coroutines.delay
 import org.ibci.componentinstaller.gui.ComponentState
 import org.ibci.componentinstaller.model.util.CustomProcessBuilder
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
@@ -72,6 +73,7 @@ class WslComponent : IComponent {
                 return false
             }
             communicator.startWindowsWrapper(true)
+            delay(3000)
             val tmpData = RequestData(
                 OperationTypeDefinitions.RUN_CMD_COMMAND,
                 arrayOf("wsl --install --no-distribution")
@@ -161,15 +163,30 @@ class WslComponent : IComponent {
      * @return True if component is installed, false: Otherwise
      */
     override fun isInstalled(): Boolean {
-        val tmpProcessBuilder: ProcessBuilder = ProcessBuilder(PathDefinitions.CHECK_WSL_BAT)
-        val tmpProcess = tmpProcessBuilder.start()
-        tmpProcess.waitFor()
-        val tmpFile = File(PathDefinitions.WSL_INSTALLED)
-        if (tmpFile.exists()) {
-            tmpFile.delete()
-            return true
-        } else {
+        communicator.startWindowsWrapper(true);
+        val tmpData = RequestData(
+            OperationTypeDefinitions.CHECK_WSL_INSTALLATION,
+            arrayOf("Check WSL installation.")
+        )
+        if (!tmpData.writeToJsonFile()) {
+            fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
+            stopCommunicator()
             return false
+        }
+        fileLogger.append(LogLevel.INFO, "Sending request to: Check WSL2 installation ...")
+        if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
+            fileLogger.append(LogLevel.ERROR, "Check WSL2 installation failed!")
+            stopCommunicator()
+            return false
+        } else {
+            fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
+            if (communicator.lastReply == "Is installed.") {
+                stopCommunicator()
+                return true
+            } else {
+                stopCommunicator()
+                return false
+            }
         }
     }
 

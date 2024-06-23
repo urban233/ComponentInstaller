@@ -104,6 +104,24 @@ class Program
                 break;
             #endregion
 
+            case OperationTypes.CheckWslInstallation:
+                try
+                {
+                    if (Wsl.CheckIfWslIsInstalled())
+                    {
+                        tmpResult = "Is installed.";
+                    }
+                    else
+                    {
+                        tmpResult = "Not installed.";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    tmpResult = ex.Message;
+                }
+                break;
+
             case OperationTypes.CloseConnection:
                 try
                 {

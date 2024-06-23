@@ -411,6 +411,15 @@ object ComposableCollection {
         )
     }
 
+    fun openFileWithDefaultApp(aFilepath: String) {
+        val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
+        tmpCustomProcessBuilder.openCommand(
+            arrayOf(
+                "/C", aFilepath
+            )
+        )
+    }
+
 //    /**
 //     * Describes a single component item
 //     *

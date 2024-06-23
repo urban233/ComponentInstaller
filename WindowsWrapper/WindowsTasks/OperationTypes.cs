@@ -6,5 +6,6 @@ public enum OperationTypes
     CreateShortcuts = 1,
     RemoveShortcuts = 2,
     RunCmdCommand = 3,
+    CheckWslInstallation = 4,
     CloseConnection = 99
 }

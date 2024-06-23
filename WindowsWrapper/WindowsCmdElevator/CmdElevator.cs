@@ -29,10 +29,10 @@ public class CmdElevator
         ProcessStartInfo startInfo = new ProcessStartInfo
         {
             FileName = "cmd.exe", // or "powershell.exe" if you want to start PowerShell
-            Arguments = $"/k {arguments}",
+            Arguments = $"/c {arguments}",
             Verb = "runas",
-            UseShellExecute = true
-            //CreateNoWindow = false
+            UseShellExecute = true,
+            CreateNoWindow = true
         };
 
         try
@@ -63,7 +63,7 @@ public class CmdElevator
         ProcessStartInfo startInfo = new ProcessStartInfo
         {
             FileName = "cmd.exe", // or "powershell.exe" if you want to start PowerShell
-            Arguments = $"/k {command}",
+            Arguments = $"/c {command}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,

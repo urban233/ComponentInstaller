@@ -89,6 +89,7 @@ class PyssaComponent: IComponent {
         // First installer prototype has only an online version, therefore no offline package is needed but an internet connection!
         try {
             communicator.startWindowsWrapper(false)
+            delay(3000)
             val tmpWindowsPackage: File = File(PathDefinitions.PYSSA_INSTALLER_WINDOWS_PACKAGE_ZIP)
             // First check if anything is stored offline
             if (tmpWindowsPackage.exists()) {
@@ -381,6 +382,7 @@ class PyssaComponent: IComponent {
     override suspend fun uninstall(): Boolean {
         try {
             communicator.startWindowsWrapper(false)
+            delay(3000)
             removeShortcuts()
             File(PathDefinitions.PYSSA_PROGRAM_DIR).deleteRecursively()
         } catch (ex: AccessDeniedException) {

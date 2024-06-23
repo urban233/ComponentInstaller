@@ -4,6 +4,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import org.ibci.componentinstaller.gui.ComponentState
 import org.ibci.componentinstaller.model.util.CustomProcessBuilder
 import org.ibci.componentinstaller.model.util.Io.downloadFile
@@ -113,6 +114,7 @@ class ColabFoldComponent: IComponent {
 
         try {
             communicator.startWindowsWrapper(false)
+            delay(3000)
             val tmpData = RequestData(
                 OperationTypeDefinitions.RUN_CMD_COMMAND,
                 arrayOf("wsl --import almaColabfold9 C:\\ProgramData\\localcolabfold\\storage C:\\ProgramData\\IBCI\\PySSA-Installer\\temp\\alma-colabfold-9-rootfs.tar")
@@ -181,6 +183,7 @@ class ColabFoldComponent: IComponent {
             }
             fileLogger.append(LogLevel.INFO, "Sending request to: Importing the AlmaLinux distribution ...")
             communicator.startWindowsWrapper(false)
+            delay(3000)
             if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
                 fileLogger.append(LogLevel.ERROR, "Importing the AlmaLinux distribution with the Windows wrapper failed!")
                 stopCommunicator()

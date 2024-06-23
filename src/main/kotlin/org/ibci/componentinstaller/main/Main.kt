@@ -8,7 +8,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import org.ibci.componentinstaller.cli.CliOperations
 import org.ibci.componentinstaller.model.components.*
 import java.io.File
 import java.nio.file.Paths

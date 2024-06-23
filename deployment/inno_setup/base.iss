@@ -31,12 +31,11 @@ Name: "{commonappdata}\IBCI\PySSA-Installer\bin"
 Name: "{commonappdata}\IBCI\PySSA-Installer\tools"
 
 [Files]
-Source: "..\..\..\..\build\compose\binaries\main\app\ComponentInstaller\*"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\bin"; Flags: ignoreversion recursesubdirs createallsubdirs;
-Source: "..\scripts\*"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\scripts"; Flags: ignoreversion recursesubdirs createallsubdirs;
-Source: "..\..\..\..\WindowsWrapper\WindowsCmdElevator\bin\Release\net8.0\publish\win-x64\WindowsCmdElevator.exe"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\tools"; Flags: ignoreversion recursesubdirs createallsubdirs;
-Source: "..\..\..\..\WindowsWrapper\WindowsTasks\bin\Release\net8.0\publish\win-x64\WindowsTasks.exe"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\tools"; Flags: ignoreversion recursesubdirs createallsubdirs;
-Source: "..\assets\icon.ico"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\assets"; Flags: ignoreversion recursesubdirs createallsubdirs;
-Source: "..\version_history.json"; DestDir: "{commonappdata}\IBCI\PySSA-Installer"; Flags: ignoreversion recursesubdirs createallsubdirs;
+Source: "src\bin\*"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\bin"; Flags: ignoreversion recursesubdirs createallsubdirs;
+Source: "src\scripts\*"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\scripts"; Flags: ignoreversion recursesubdirs createallsubdirs;
+Source: "src\tools\*"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\tools"; Flags: ignoreversion recursesubdirs createallsubdirs;
+Source: "src\assets\icon.ico"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\assets"; Flags: ignoreversion recursesubdirs createallsubdirs;
+Source: "src\version_history.json"; DestDir: "{commonappdata}\IBCI\PySSA-Installer"; Flags: ignoreversion recursesubdirs createallsubdirs;
 
 [Icons]
 Name: "{commondesktop}\PySSA-Installer"; Filename: "{commonappdata}\IBCI\PySSA-Installer\bin\ComponentInstaller.exe"; IconFilename: "{commonappdata}\IBCI\PySSA-Installer\assets\icon.ico"

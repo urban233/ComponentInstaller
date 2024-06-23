@@ -1,7 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.com.google.gson.*
 import java.io.ByteArrayOutputStream
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.LocalDate
 
 plugins {
     kotlin("jvm")
@@ -46,102 +46,178 @@ compose.desktop {
     }
 }
 
-tasks.register("updateVersionHistory") {
-    doLast {
-        val versionHistoryFile = file("src/main/resources/version_history.json")
-        val newVersion = project.version.toString()
-        val newReleaseDate = SimpleDateFormat("yyyy-MM-dd").format(Date())
 
-        if (!versionHistoryFile.exists()) {
-            throw GradleException("version_history.json file does not exist!")
+
+// Here are custom gradle tasks
+
+val versionHistoryFile = file("src/main/resources/version_history.json")
+
+/**
+ * Appends the latest version number to the version_history.json file
+ */
+tasks.register<DefaultTask>("appendVersion") {
+    description = "Appends current project version to versionHistory.json"
+
+    doLast {
+        val currentVersion = project.version.toString()
+        val releaseDate = LocalDate.now().toString()
+
+        val existingData = if (versionHistoryFile.exists()) {
+            // Read existing data if file exists, handle potential exceptions
+            try {
+                Gson().fromJson(versionHistoryFile.readText(), JsonObject::class.java)
+            } catch (e: Exception) {
+                logger.warn("Error reading existing version history: $e")
+                JsonObject()
+            }
+        } else {
+            JsonObject()
         }
 
-        // Read and parse the JSON file manually
-        val versionHistoryContent = versionHistoryFile.readText()
-        val versionHistory = parseJson(versionHistoryContent)
-
-        val newEntry = mapOf("version" to newVersion, "releaseDate" to newReleaseDate)
-        val updatedVersionHistory = versionHistory.toMutableList().apply { add(newEntry) }
-
-        val updatedJson = toJsonString(updatedVersionHistory)
-        versionHistoryFile.writeText(updatedJson)
-
-        println("Version history updated with version: $newVersion and release date: $newReleaseDate")
-    }
-}
-
-fun parseJson(json: String): List<Map<String, String>> {
-    // A very simple JSON parser tailored to the expected format of version_history.json
-    val regex = Regex("""\{"version":\s*"(.+?)",\s*"releaseDate":\s*"(.+?)"}""")
-    return regex.findAll(json).map { matchResult ->
-        mapOf("version" to matchResult.groupValues[1], "releaseDate" to matchResult.groupValues[2])
-    }.toList()
-}
-
-fun toJsonString(versionHistory: List<Map<String, String>>): String {
-    val entries = versionHistory.joinToString(",\n") { entry ->
-        """    {"version": "${entry["version"]}", "releaseDate": "${entry["releaseDate"]}"}"""
-    }
-    return """{
-  "versionHistory": [
-$entries
-  ]
-}"""
-}
-
-tasks.register("generateInnoSetupScript") {
-    doLast {
-        val template = file("src/main/resources/inno_setup/base.iss").readText()
-        val processedScript = template.replace("{#AppVersion}", version.toString())
-        file("src/main/resources/inno_setup/base_with_version.iss").writeText(processedScript)
-    }
-}
-
-tasks.register<Exec>("packageWithInnoSetup") {
-    dependsOn("updateVersionHistory", "generateInnoSetupScript", "publishWindowsCmdElevator", "publishWindowsTasks", "createDistributable")
-    val innoSetupPath = "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe"
-    val setupScript = file("src/main/resources/inno_setup/base_with_version.iss")
-    commandLine(innoSetupPath, setupScript.absolutePath)
-}
-
-// Function to configure the publishing task
-fun configurePublishTask(taskName: String, projectDir: String) {
-    tasks.register<Exec>(taskName) {
-        // Define the command to publish the project
-        val pubxmlFile = file("$projectDir/Properties/PublishProfiles/FolderProfile.pubxml")
-        commandLine("dotnet", "publish", projectDir, "/p:PublishProfile=$pubxmlFile")
-
-        // Setting the working directory
-        workingDir = file(projectDir)
-
-        // Capture and log the output
-        val outputStream = ByteArrayOutputStream()
-        standardOutput = outputStream
-        errorOutput = outputStream
-        isIgnoreExitValue = true
-
-        doLast {
-            println(outputStream.toString())
+        val versionHistory = existingData.getAsJsonArray("versionHistory") ?: JsonArray()
+        val newEntry = JsonObject().apply {
+            addProperty("version", currentVersion)
+            addProperty("releaseDate", releaseDate)
         }
+        versionHistory.add(newEntry)
+        val tmpGson: Gson = GsonBuilder().setPrettyPrinting().create()
+        versionHistoryFile.writeText(tmpGson.toJson(existingData))
     }
 }
 
-configurePublishTask("publishWindowsCmdElevator", "$projectDir/WindowsWrapper/WindowsCmdElevator")
-configurePublishTask("publishWindowsTasks", "$projectDir/WindowsWrapper/WindowsTasks")
-
-
-tasks.register("generateOfflineInnoSetupScript") {
+/**
+ * Substitutes the version number placeholder in the inno setup script with the latest one
+ */
+tasks.register("updateVersionInInnoSetupScriptOnline") {
     doLast {
-        val template = file("src/main/resources/inno_setup/baseOffline.iss").readText()
+        val template = file("$projectDir/deployment/inno_setup/base.iss").readText()
         val processedScript = template.replace("{#AppVersion}", version.toString())
-        file("src/main/resources/inno_setup/base_offline_with_version.iss").writeText(processedScript)
+        file("$projectDir/deployment/inno_setup/base_with_version.iss").writeText(processedScript)
     }
 }
 
-tasks.register<Exec>("packageWithInnoSetupForOffline") {
-    // IMPORTANT: This task does NOT update the version number of the installer, to do this please use the task packageWithInnoSetup!
-    dependsOn("generateOfflineInnoSetupScript", "publishWindowsCmdElevator", "publishWindowsTasks", "createDistributable")
-    val innoSetupPath = "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe"
-    val setupScript = file("src/main/resources/inno_setup/base_offline_with_version.iss")
-    commandLine(innoSetupPath, setupScript.absolutePath)
+tasks.register<Exec>("prepareInnoSetupScriptOnline") {
+    mustRunAfter("createDistributable", "publishWindowsCmdElevator")
+    val copyScript = file("$projectDir/deployment/inno_setup/copy_inno_src.bat")
+    commandLine("cmd", "/c", copyScript)
 }
+
+tasks.register<Exec>("compileOnlineInnoSetup") {
+    dependsOn(
+        "appendVersion",
+        "updateVersionInInnoSetupScriptOnline",
+        "createDistributable",
+        "publishWindowsCmdElevator",
+        "publishWindowsTasks",
+        "prepareInnoSetupScriptOnline"
+    )
+    mustRunAfter("prepareInnoSetupScriptOnline")
+    val innoSetupPath = "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe"
+    val setupScript = file("$projectDir/deployment/inno_setup/base_with_version.iss")
+    commandLine(innoSetupPath, setupScript)
+}
+
+tasks.register<Exec>("publishWindowsCmdElevator") {
+    // Define the command to publish the project
+    val pubxmlFile = file("$projectDir/WindowsWrapper/WindowsCmdElevator/Properties/PublishProfiles/FolderProfile.pubxml")
+    commandLine("dotnet", "publish", "$projectDir/WindowsWrapper/WindowsCmdElevator", "/p:PublishProfile=$pubxmlFile")
+
+    // Setting the working directory
+    workingDir = file(projectDir)
+
+    // Capture and log the output
+    val outputStream = ByteArrayOutputStream()
+    standardOutput = outputStream
+    errorOutput = outputStream
+    isIgnoreExitValue = true
+
+    doLast {
+        println(outputStream.toString())
+    }
+}
+
+tasks.register<Exec>("publishWindowsTasks") {
+    // Define the command to publish the project
+    val pubxmlFile = file("$projectDir/WindowsWrapper/WindowsTasks/Properties/PublishProfiles/FolderProfile.pubxml")
+    commandLine("dotnet", "publish", "$projectDir/WindowsWrapper/WindowsTasks", "/p:PublishProfile=$pubxmlFile")
+
+    // Setting the working directory
+    workingDir = file(projectDir)
+
+    // Capture and log the output
+    val outputStream = ByteArrayOutputStream()
+    standardOutput = outputStream
+    errorOutput = outputStream
+    isIgnoreExitValue = true
+
+    doLast {
+        println(outputStream.toString())
+    }
+}
+
+//
+//tasks.register<Exec>("compileOnlineInnoSetup") {
+////    dependsOn(
+////        "updateVersionHistory",
+////        "generateInnoSetupScript",
+////        //"publishWindowsCmdElevator",
+////        //"publishWindowsTasks",
+////        //"createDistributable"
+////    )
+//
+//    doLast {
+//        val copyScript = file("src/main/resources/scripts/copy_inno_src.bat")
+//        //commandLine("cmd", copyScript.absolutePath)
+//        val innoSetupPath = "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe"
+//        val setupScript = file("src/main/resources/inno_setup/base_with_version.iss")
+//        commandLine(innoSetupPath, setupScript.absolutePath)
+//    }
+//
+////    val copyScript = file("src/main/resources/scripts/copy_inno_src.bat")
+////    commandLine("cmd.exe", copyScript.absolutePath)
+////    val innoSetupPath = "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe"
+////    val setupScript = file("src/main/resources/inno_setup/base_with_version.iss")
+////    commandLine(innoSetupPath, setupScript.absolutePath)
+//}
+//
+//// Function to configure the publishing task
+//fun configurePublishTask(taskName: String, projectDir: String) {
+//    tasks.register<Exec>(taskName) {
+//        // Define the command to publish the project
+//        val pubxmlFile = file("$projectDir/Properties/PublishProfiles/FolderProfile.pubxml")
+//        commandLine("dotnet", "publish", projectDir, "/p:PublishProfile=$pubxmlFile")
+//
+//        // Setting the working directory
+//        workingDir = file(projectDir)
+//
+//        // Capture and log the output
+//        val outputStream = ByteArrayOutputStream()
+//        standardOutput = outputStream
+//        errorOutput = outputStream
+//        isIgnoreExitValue = true
+//
+//        doLast {
+//            println(outputStream.toString())
+//        }
+//    }
+//}
+//
+//configurePublishTask("publishWindowsCmdElevator", "$projectDir/WindowsWrapper/WindowsCmdElevator")
+//configurePublishTask("publishWindowsTasks", "$projectDir/WindowsWrapper/WindowsTasks")
+//
+//
+//tasks.register("generateOfflineInnoSetupScript") {
+//    doLast {
+//        val template = file("src/main/resources/inno_setup/baseOffline.iss").readText()
+//        val processedScript = template.replace("{#AppVersion}", version.toString())
+//        file("src/main/resources/inno_setup/base_offline_with_version.iss").writeText(processedScript)
+//    }
+//}
+//
+//tasks.register<Exec>("packageWithInnoSetupForOffline") {
+//    // IMPORTANT: This task does NOT update the version number of the installer, to do this please use the task packageWithInnoSetup!
+//    dependsOn("generateOfflineInnoSetupScript", "publishWindowsCmdElevator", "publishWindowsTasks", "createDistributable")
+//    val innoSetupPath = "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe"
+//    val setupScript = file("src/main/resources/inno_setup/base_offline_with_version.iss")
+//    commandLine(innoSetupPath, setupScript.absolutePath)
+//}
