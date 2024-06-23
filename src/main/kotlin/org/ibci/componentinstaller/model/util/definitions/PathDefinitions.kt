@@ -37,7 +37,7 @@ object PathDefinitions {
     /**
      * Filepath of the windows package zip archive
      */
-    const val PYSSA_INSTALLER_WINDOWS_PACKAGE_ZIP: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\windows_package.zip"
+    const val PYSSA_INSTALLER_WINDOWS_PACKAGE_ZIP: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\temp\\windows_package.zip"
     /**
      * Path of the PySSA rich client
      *

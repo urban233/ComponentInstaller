@@ -42,7 +42,7 @@ Source: "..\..\..\..\WindowsWrapper\WindowsTasks\bin\Release\net8.0\publish\win-
 Source: "..\assets\icon.ico"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\assets"; Flags: ignoreversion recursesubdirs createallsubdirs;
 Source: "..\version_history.json"; DestDir: "{commonappdata}\IBCI\PySSA-Installer"; Flags: ignoreversion recursesubdirs createallsubdirs;
 ; These files are only for the offline installation
-Source: "..\..\..\..\offline_resources\windows_package.zip"; DestDir: "{commonappdata}\IBCI\PySSA-Installer"; Flags: ignoreversion recursesubdirs createallsubdirs;
+Source: "..\..\..\..\offline_resources\windows_package.zip"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\temp"; Flags: ignoreversion recursesubdirs createallsubdirs;
 Source: "..\..\..\..\offline_resources\alma-colabfold-9-rootfs.tar"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\temp"; Flags: ignoreversion recursesubdirs createallsubdirs;
 
 [Icons]

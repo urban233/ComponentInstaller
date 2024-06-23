@@ -176,7 +176,7 @@ class PyssaComponent: IComponent {
      * @return True if operation is successful, false: Otherwise
      */
     private fun unzipWindowsPackage(): Boolean {
-        val tmpZipFilePath: File = File("${PathDefinitions.PYSSA_PROGRAM_DIR}\\windows_package.zip")
+        val tmpZipFilePath: File = File(PathDefinitions.PYSSA_INSTALLER_WINDOWS_PACKAGE_ZIP)
         val tmpExtractPath: File = File(PathDefinitions.PYSSA_PROGRAM_DIR)
 
         try {

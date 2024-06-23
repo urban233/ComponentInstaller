@@ -1,5 +1,7 @@
 package org.ibci.componentinstaller.model.util
 
+import java.io.File
+
 /**
  * Class that contains static methods for IO.
  */
@@ -14,6 +16,10 @@ object Io {
      */
 
     fun downloadFile(anUrl: String, aFilepath: String): Boolean {
+        val tmpParentPath = File(aFilepath).parent
+        if (!File(tmpParentPath).exists()) {
+            File(tmpParentPath).mkdirs()
+        }
         val tmpClient = java.net.URL(anUrl).openStream()
         return try {
             tmpClient.use { input ->
