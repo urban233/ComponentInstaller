@@ -1,6 +1,7 @@
 package org.ibci.extension.communication;
 import org.ibci.componentinstaller.model.util.CustomProcessBuilder;
 import org.ibci.componentinstaller.model.util.definitions.PathDefinitions;
+import org.ibci.componentinstaller.util.RequestData;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
@@ -11,13 +12,9 @@ public class Communicator {
 
     public String lastReply;
 
-    public boolean sendRequest(String aRequest, boolean asAdmin) {
-        if (!startWindowsWrapper(asAdmin)) {
-            return false;
-        }
+    public boolean sendRequest(String aRequest) {
         try (ZContext context = new ZContext()) {
             // Socket to talk to clients
-            System.out.println("Creating REQ socket ...");
             ZMQ.Socket socket = context.createSocket(SocketType.REQ);
             socket.connect("tcp://localhost:7878");
             // Send a request to the server
@@ -33,16 +30,7 @@ public class Communicator {
         return true;
     }
 
-    private boolean startAdminWindowsWrapper() {
-        CustomProcessBuilder tmpCustomProcessBuilder = new CustomProcessBuilder();
-        String[] tmpArgs = new String[2];
-        tmpArgs[0] = "--admin";
-        tmpArgs[1] = "--keep-checking";
-        tmpCustomProcessBuilder.runCommand(tmpArgs, PathDefinitions.WINDOWS_TASKS_EXE);
-        return true;
-    }
-
-    private boolean startWindowsWrapper(boolean asAdmin) {
+    public boolean startWindowsWrapper(boolean asAdmin) {
         // Create a ProcessBuilder instance
         if (asAdmin) {
             CustomProcessBuilder tmpCustomProcessBuilder = new CustomProcessBuilder();
@@ -62,10 +50,9 @@ public class Communicator {
         return true;
     }
 
-    public boolean sendRequestWithDebug(String aRequest) {
+    public boolean sendRequestWithDebug(String aRequest, Boolean asAdmin) {
         try (ZContext context = new ZContext()) {
             // Socket to talk to clients
-            System.out.println("Creating REQ socket ...");
             ZMQ.Socket socket = context.createSocket(SocketType.REQ);
             socket.connect("tcp://localhost:7879");
             // Send a request to the server

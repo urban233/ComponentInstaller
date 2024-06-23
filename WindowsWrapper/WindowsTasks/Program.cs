@@ -9,27 +9,23 @@ class Program
         Logging.SetupLoggerConfig();
 
         Communicator communicator = new Communicator();
-        string tmpJsonFilepath = communicator.CreateConnection();
-        RequestData tmpRequestData = communicator.GetRequestData(tmpJsonFilepath);
-        communicator.CloseConnection(ExecuteOperation(tmpRequestData));
-        // if (args[0] == "--admin" && args[1] == "--keep-checking")
-        // {
-        //     bool tmpKeepChecking = true;
-        //     string tmpResult= "";
-        //     while (tmpKeepChecking)
-        //     {
-        //         tmpResult = ExecuteOperation(tmpRequestData);
-        //         if (tmpResult == "Close")
-        //         {
-        //             tmpKeepChecking = false;
-        //         }
-        //     }
-        //     communicator.CloseConnection(tmpResult);
-        // }
-        // else
-        // {
-        //     communicator.CloseConnection(ExecuteOperation(tmpRequestData));
-        // }
+        communicator.CreateConnection();
+        bool tmpKeepChecking = true;
+        while (tmpKeepChecking)
+        {
+            RequestData tmpRequestData = communicator.GetRequestData(communicator.CheckForRequest());
+            string tmpResult = ExecuteOperation(tmpRequestData);
+            if (tmpResult == "Close connection.")
+            {
+                tmpKeepChecking = false;
+                communicator.SendReply(tmpResult);
+            }
+            else
+            {
+                communicator.SendReply(tmpResult);
+            }
+        }
+        communicator.CloseConnection();
     }
 
     static string ExecuteOperation(RequestData theRequestData)
@@ -107,6 +103,17 @@ class Program
                 }
                 break;
             #endregion
+
+            case OperationTypes.CloseConnection:
+                try
+                {
+                    tmpResult = "Close connection.";
+                }
+                catch (Exception ex)
+                {
+                    tmpResult = ex.Message;
+                }
+                break;
 
             #region Default
             default:
