@@ -26,6 +26,10 @@ object LowLevelComposable {
 
     /**
      * Describes a button used for installing any component in
+     *
+     * @param onClickFunction Function to run if the button is clicked
+     * @param aText Text to display on the button
+     * @param isEnabled Sets the button enabled or disabled
      */
     @Composable
     fun standardButton(
@@ -51,6 +55,10 @@ object LowLevelComposable {
 
     /**
      * Describes an alternative button design used for less actionable tasks
+     *
+     * @param onClickFunction Function to run if the button is clicked
+     * @param aText Text to display on the button
+     * @param isEnabled Sets the button enabled or disabled
      */
     @Composable
     fun outlinedStandardButton(
@@ -86,6 +94,11 @@ object LowLevelComposable {
     /**
      * Describes a standard text composable
      *
+     * @param aText Text to display
+     * @param aFontSize Font size
+     * @param aFontColor Font color
+     * @param aFontWeight Font weight
+     * @param aModifier Modifier
      */
     @Composable
     fun standardText(
@@ -108,6 +121,9 @@ object LowLevelComposable {
     /**
      * Describes the text displayed on a button
      *
+     * @param aText Text to display on the button
+     * @param aColor Color for the button
+     * @param aFontWeight Font weight
      */
     @Composable
     fun textForButton(aText: String, aColor: Color, aFontWeight: FontWeight = FontWeight.Medium) {
@@ -122,6 +138,7 @@ object LowLevelComposable {
     /**
      * Describes the component name text
      *
+     * @param aName Component name
      */
     @Composable
     fun componentNameText(aName: String) {
@@ -137,6 +154,9 @@ object LowLevelComposable {
     /**
      * Describes a standard dropdown menu item
      *
+     * @param onClickFunction Function to run if item is clicked
+     * @param aText Text of the dropdown item
+     * @param aFontColor Font color
      */
     @Composable
     fun standardDropdownMenuItem(
@@ -162,6 +182,7 @@ object LowLevelComposable {
     /**
      * Describes the component logo
      *
+     * @param aLogoResourcePath Filepath to the logo
      */
     @Composable
     fun componentLogo(aLogoResourcePath: String) {

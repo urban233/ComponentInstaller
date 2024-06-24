@@ -11,6 +11,7 @@ import java.util.logging.Formatter
 /**
  * Logger that logs message to the default log file
  *
+ * TODO: This needs a better implementation. Logs are written in a strange way!
  */
 class FileLogger {
     /**

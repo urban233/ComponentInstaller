@@ -4,6 +4,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import org.ibci.componentinstaller.util.CustomFonts
 
+/**
+ * Object container for gui definitions
+ */
 object GuiDefinitions {
     /**
      * Brand color of PySSA

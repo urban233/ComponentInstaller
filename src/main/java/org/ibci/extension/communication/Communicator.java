@@ -1,17 +1,27 @@
 package org.ibci.extension.communication;
 import org.ibci.componentinstaller.model.util.CustomProcessBuilder;
 import org.ibci.componentinstaller.model.util.definitions.PathDefinitions;
-import org.ibci.componentinstaller.util.RequestData;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 import java.io.IOException;
 
+/**
+ * Class for the communicator
+ *
+ */
 public class Communicator {
-
+    /**
+     * Contains the last reply as string
+     */
     public String lastReply;
 
+    /**
+     * Sends a request to the WindowsTasks.exe
+     * @param aRequest Path to the json file to send to WindowsTasks.exe
+     * @return True if request was successful, otherwise false.
+     */
     public boolean sendRequest(String aRequest) {
         try (ZContext context = new ZContext()) {
             // Socket to talk to clients
@@ -30,6 +40,12 @@ public class Communicator {
         return true;
     }
 
+    /**
+     * Starts the WindowsTasks.exe file
+     *
+     * @param asAdmin Flag if the executable should be run with admin privileges
+     * @return True if executable started successfully, otherwise false
+     */
     public boolean startWindowsWrapper(boolean asAdmin) {
         // Create a ProcessBuilder instance
         if (asAdmin) {
@@ -49,8 +65,13 @@ public class Communicator {
         }
         return true;
     }
-
-    public boolean sendRequestWithDebug(String aRequest, Boolean asAdmin) {
+    /**
+     * Sends a request in a debug environment
+     *
+     * @param aRequest Path to json file
+     * @return True if request was successful, otherwise false
+     */
+    public boolean sendRequestWithDebug(String aRequest) {
         try (ZContext context = new ZContext()) {
             // Socket to talk to clients
             ZMQ.Socket socket = context.createSocket(SocketType.REQ);
@@ -66,10 +87,5 @@ public class Communicator {
             return false;
         }
         return true;
-    }
-
-    public static void main(String[] args) throws Exception {
-        System.out.println("Communicator started & creating ZContext ...");
-
     }
 }

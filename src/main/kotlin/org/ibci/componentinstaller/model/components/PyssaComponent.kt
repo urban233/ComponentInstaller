@@ -52,16 +52,14 @@ class PyssaComponent: IComponent {
      * IMPORTANT: If version could not be found, the major is -1!!!
      *
      */
-    override val localVersion: KotlinVersion
-        get() = KotlinVersion(1, 0, 0)
+    override var localVersion: KotlinVersion = KotlinVersion(1, 0, 0)
 
     /**
      * The remote component version
      * IMPORTANT: If remote version is unavailable, the major is -1!!!
      *
      */
-    override val remoteVersion: KotlinVersion
-        get() = KotlinVersion(1, 0, 0)
+    override var remoteVersion: KotlinVersion = KotlinVersion(1, 0, 0)
 
     /**
      * Information about the component
@@ -511,14 +509,24 @@ class PyssaComponent: IComponent {
      * @return True if component has update, false: Otherwise
      */
     override fun hasUpdate(): Boolean {
-        if (isInstalled()) {
+        if (Utils.isInternetAvailable()) {
+            if (isInstalled()) {
+                val localVersionHistory: VersionHistory = VersionHelper.createVersionHistoryFromLocalFile(
+                    PathDefinitions.PYSSA_VERSION_HISTORY_JSON
+                )
+                localVersion = localVersionHistory.getLatestVersion().getAsKotlinVersion()
+                val remoteVersionHistory: VersionHistory = VersionHelper.createVersionHistoryFromRemoteSource(
+                    UrlDefinitions.PYSSA_RICH_CLIENT_VERSION_HISTORY
+                )
+                remoteVersion = remoteVersionHistory.getLatestVersion().getAsKotlinVersion()
+                return remoteVersionHistory.compareAgainstLatestVersionOfHistory(localVersionHistory.getLatestVersion()) == -1
+            }
+            return false
+        } else {
             val localVersionHistory: VersionHistory = VersionHelper.createVersionHistoryFromLocalFile(
                 PathDefinitions.PYSSA_VERSION_HISTORY_JSON
             )
-            val remoteVersionHistory: VersionHistory = VersionHelper.createVersionHistoryFromRemoteSource(
-                UrlDefinitions.PYSSA_RICH_CLIENT_VERSION_HISTORY
-            )
-            return remoteVersionHistory.compareAgainstLatestVersionOfHistory(localVersionHistory.getLatestVersion()) == -1
+            localVersion = localVersionHistory.getLatestVersion().getAsKotlinVersion()
         }
         return false
     }

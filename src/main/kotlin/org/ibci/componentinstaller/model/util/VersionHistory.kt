@@ -4,6 +4,8 @@ import kotlinx.serialization.Serializable
 
 /**
  * Class to store all versions of the json file
+ *
+ * @param versionHistory An array with single version infos
  */
 @Serializable
 data class VersionHistory(val versionHistory: Array<VersionInfo>) {

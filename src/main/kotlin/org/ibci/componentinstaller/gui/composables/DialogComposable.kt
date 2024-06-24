@@ -3,22 +3,24 @@ package org.ibci.componentinstaller.gui.composables
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.ibci.componentinstaller.gui.DialogType
-import org.ibci.componentinstaller.main.MainWindowController
-import org.ibci.componentinstaller.model.components.IComponent
 
+/**
+ * Object for storing dialog composable functions
+ */
 object DialogComposable {
+    /**
+     * Describes a basic confirmation dialog
+     *
+     * @param title Title of the dialog
+     * @param message Message to display in the dialog
+     * @param onConfirm Function to run on confirmation
+     * @param onDismiss Function to run on dismiss
+     */
     @Composable
     fun ConfirmationDialog(
         title: String,
@@ -54,6 +56,13 @@ object DialogComposable {
         )
     }
 
+    /**
+     * Describes a custom dialog
+     *
+     * @param onCloseRequest Function to run if dialog closes
+     * @param title Title of the dialog
+     * @param content Content to display in the dialog
+     */
     @Composable
     fun CustomDialog(onCloseRequest: () -> Unit, title: String, content: String) {
         AlertDialog(

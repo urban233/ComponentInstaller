@@ -45,11 +45,11 @@ class CustomProcessBuilder {
      * @param anExecutable Executable file that should be used to run the command against (Optional, default: cmd.exe)
      *
      * @return A process object if the command could be opened, Otherwise: null
-     * @throws IllegalArgumentException Thrown if `aCommand` is either an empty array or the first element is an empty string
+     * @throws IllegalArgumentException Thrown if `aCommand` is either an empty array
      */
     fun openCommand(aCommand: Array<String>, anExecutable: String = "cmd.exe") : Process? {
-        if (aCommand.isEmpty() || aCommand[0] == "") {
-            throw IllegalArgumentException("aCommand is either an empty array or the first element is an empty string")
+        if (aCommand.isEmpty()) {
+            throw IllegalArgumentException("aCommand is either an empty array")
         }
         try {
             this.cmdBuilder.command(anExecutable, *aCommand)

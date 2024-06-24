@@ -4,6 +4,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.platform.Font
 
+/**
+ * Object container for custom fonts
+ */
 object CustomFonts {
     /**
      * Custom font family Roboto

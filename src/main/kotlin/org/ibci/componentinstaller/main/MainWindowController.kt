@@ -2,13 +2,14 @@ package org.ibci.componentinstaller.main
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
-import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.*
-import org.ibci.componentinstaller.gui.DialogType
 import org.ibci.componentinstaller.gui.DialogsState
 import org.ibci.componentinstaller.model.components.IComponent
 import org.ibci.componentinstaller.util.logger.FileLogger
 
+/**
+ * Class for controlling the main window
+ */
 class MainWindowController() {
     /**
      * Class file logger
@@ -18,6 +19,8 @@ class MainWindowController() {
     /**
      * Installs a component
      *
+     * @param aComponent Component instance
+     * @param aProgressDescriptionUpdate Function to report progress back to the main window
      */
     suspend fun installComponent(
         aComponent: IComponent,
@@ -40,6 +43,8 @@ class MainWindowController() {
     /**
      * Uninstalls a component
      *
+     * @param aComponent Component instance
+     * @param aProgressDescriptionUpdate Function to report progress back to the main window
      */
     suspend fun uninstallComponent(
         aComponent: IComponent,
@@ -87,6 +92,9 @@ class MainWindowController() {
     /**
      * Update a component
      *
+     * @param aComponent Component instance
+     * @param aSystemState List of system states
+     * @param aProgressDescriptionUpdate Function to report progress back to the main window
      */
     suspend fun updateComponent(
         aComponent: IComponent,

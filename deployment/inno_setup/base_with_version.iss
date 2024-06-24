@@ -4,12 +4,12 @@
 [Setup]
 WizardImageFile=compiler:WizClassicImage.bmp
 AppName=PySSA-Installer
-AppVersion=0.0.4
+AppVersion=0.1.1
 AppCopyright=Martin Urban, Hannah Kullik, IBCI
 AppId={{192F52C3-D86D-4735-9929-C7DF599CB534}
 DefaultDirName={commonappdata}\IBCI\PySSA-Installer
 AppPublisher=IBCI
-VersionInfoProductName=PySSA-Installer
+VersionInfoProductName=PySSA-Component-Installer
 VersionInfoProductVersion=0.1.0
 MinVersion=0,6.2
 OutputDir=out
@@ -20,7 +20,7 @@ DisableProgramGroupPage=True
 ArchitecturesInstallIn64BitMode=x64
 WizardStyle=modern
 DisableReadyPage=True
-UninstallDisplayName=PySSA Installer
+UninstallDisplayName=PySSA Component Installer
 UninstallDisplayIcon={app}\assets\icon.ico
 
 [Dirs]
@@ -36,6 +36,8 @@ Source: "src\scripts\*"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\scripts"
 Source: "src\tools\*"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\tools"; Flags: ignoreversion recursesubdirs createallsubdirs;
 Source: "src\assets\icon.ico"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\assets"; Flags: ignoreversion recursesubdirs createallsubdirs;
 Source: "src\version_history.json"; DestDir: "{commonappdata}\IBCI\PySSA-Installer"; Flags: ignoreversion recursesubdirs createallsubdirs;
+Source: "src\PySSAComponentInstaller-UserGuide.pdf"; DestDir: "{commonappdata}\IBCI\PySSA-Installer"; Flags: ignoreversion recursesubdirs createallsubdirs;
+;Source: "src\offline_resources\windows_package.zip"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\temp"; Flags: ignoreversion recursesubdirs createallsubdirs;
 
 [Icons]
 Name: "{commondesktop}\PySSA-Installer"; Filename: "{commonappdata}\IBCI\PySSA-Installer\bin\ComponentInstaller.exe"; IconFilename: "{commonappdata}\IBCI\PySSA-Installer\assets\icon.ico"

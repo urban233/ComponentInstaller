@@ -39,6 +39,8 @@ import org.ibci.componentinstaller.util.logger.LogLevel
 
 /**
  * Describes the outline of the main window
+ *
+ * @param aController Main window controller instance
  */
 @Composable
 fun MainWindow(aController: MainWindowController) {
@@ -157,6 +159,7 @@ fun MainWindowHeader() {
 /**
  * Describes a menu that is valid for the app
  *
+ * @param moreOptionsExpanded A boolean mutable state instance for managing the more options action
  */
 @Composable
 fun appMenu(moreOptionsExpanded: MutableState<Boolean>) {
@@ -178,7 +181,7 @@ fun appMenu(moreOptionsExpanded: MutableState<Boolean>) {
         )
         LowLevelComposable.standardDropdownMenuItem(
             onClickFunction = {
-                ComposableCollection.openFileWithDefaultApp("C:\\ProgramData\\IBCI\\PySSA-Installer\\ReferenceManualforPySSAComponentInstaller.pdf")
+                ComposableCollection.openFileWithDefaultApp("C:\\ProgramData\\IBCI\\PySSA-Installer\\PySSAComponentInstaller-UserGuide.pdf")
                 moreOptionsExpanded.value = false},
             aText = "Help"
         )
@@ -199,7 +202,7 @@ fun appMenu(moreOptionsExpanded: MutableState<Boolean>) {
                 title = "About PySSA Component Installer v${localVersionHistory.getLatestVersion().version}",
                 content = "PySSA Component Installer is capable of installing all three components needed for launching and using PySSA." +
                         "\n\nMinimum requirements: Windows 10 22H2 - Build: 19045.4529" +
-                        "\nRecommended requirements: Windows 11 23H2 - Build: 22631.3737 or newer" +
+                        "\nRecommended requirements: Windows 11 23H2 - Build: 22631.3737 or later" +
                         "\nTo check the version open Settings > System > About or press Win + R and enter winver and select OK." +
                         "\nFor more information see Help.",
             )
@@ -210,6 +213,9 @@ fun appMenu(moreOptionsExpanded: MutableState<Boolean>) {
 /**
  * Describes the expand and collapse section
  *
+ * @param title Title of the section
+ * @param expandedState A mutable boolean state for controlling the expand section functionality
+ * @param addComponents Function to add components to the section
  */
 @Composable
 fun ExpandableSection(
@@ -243,6 +249,12 @@ fun ExpandableSection(
     }
 }
 
+/**
+ * Describes a non-collapsable section
+ *
+ * @param title Title of the section
+ * @param addComponents Function to add components to the section
+ */
 @Composable
 fun Section(
     title: String,

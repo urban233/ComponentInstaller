@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "org.ibci"
-version = "0.0.4"
+version = "0.1.1"
 
 repositories {
     mavenCentral()
@@ -96,9 +96,26 @@ tasks.register("updateVersionInInnoSetupScriptOnline") {
     }
 }
 
+/**
+ * Substitutes the version number placeholder in the inno setup script with the latest one
+ */
+tasks.register("updateVersionInInnoSetupScriptOffline") {
+    doLast {
+        val template = file("$projectDir/deployment/inno_setup/baseOffline.iss").readText()
+        val processedScript = template.replace("{#AppVersion}", version.toString())
+        file("$projectDir/deployment/inno_setup/base_offline_with_version.iss").writeText(processedScript)
+    }
+}
+
 tasks.register<Exec>("prepareInnoSetupScriptOnline") {
     mustRunAfter("createDistributable", "publishWindowsCmdElevator")
     val copyScript = file("$projectDir/deployment/inno_setup/copy_inno_src.bat")
+    commandLine("cmd", "/c", copyScript)
+}
+
+tasks.register<Exec>("prepareInnoSetupScriptOffline") {
+    mustRunAfter("createDistributable", "publishWindowsCmdElevator")
+    val copyScript = file("$projectDir/deployment/inno_setup/copy_inno_src_offline.bat")
     commandLine("cmd", "/c", copyScript)
 }
 
@@ -114,6 +131,21 @@ tasks.register<Exec>("compileOnlineInnoSetup") {
     mustRunAfter("prepareInnoSetupScriptOnline")
     val innoSetupPath = "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe"
     val setupScript = file("$projectDir/deployment/inno_setup/base_with_version.iss")
+    commandLine(innoSetupPath, setupScript)
+}
+
+tasks.register<Exec>("compileOfflineInnoSetup") {
+    dependsOn(
+        "appendVersion",
+        "updateVersionInInnoSetupScriptOffline",
+        "createDistributable",
+        "publishWindowsCmdElevator",
+        "publishWindowsTasks",
+        "prepareInnoSetupScriptOffline"
+    )
+    mustRunAfter("prepareInnoSetupScriptOffline")
+    val innoSetupPath = "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe"
+    val setupScript = file("$projectDir/deployment/inno_setup/base_offline_with_version.iss")
     commandLine(innoSetupPath, setupScript)
 }
 

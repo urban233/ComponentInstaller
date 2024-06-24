@@ -32,7 +32,6 @@ public class CmdElevator
             Arguments = $"/c {arguments}",
             Verb = "runas",
             UseShellExecute = true,
-            CreateNoWindow = true
         };
 
         try

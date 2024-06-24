@@ -2,6 +2,9 @@ package org.ibci.componentinstaller.util
 
 import java.net.InetAddress
 
+/**
+ * Object container for utility functions
+ */
 object Utils {
     /**
      * Check if internet connection is available

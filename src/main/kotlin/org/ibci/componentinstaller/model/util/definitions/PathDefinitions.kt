@@ -31,6 +31,10 @@ object PathDefinitions {
      */
     const val CMD_ELEVATOR_EXE: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\tools\\WindowsCmdElevator.exe"
     /**
+     * Filepath of the hide window tool
+     */
+    const val WINDOW_HIDE_EXE: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\tools\\hide_window.exe"
+    /**
      * Filepath of the almalinux rootfs
      */
     const val PYSSA_INSTALLER_ALMALINUX_TAR: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\temp\\alma-colabfold-9-rootfs.tar"
@@ -96,4 +100,9 @@ object PathDefinitions {
      *
      */
     const val EXCHANGE_JSON: String = "${PYSSA_INSTALLER_PROGRAM_DIR}\\tools\\exchange.json"
+    /**
+     * Filepath of the manual wsl installer msi
+     *
+     */
+    const val WSL_MANUAL_INSTALLER_MSI = "${PYSSA_INSTALLER_PROGRAM_DIR}\\temp\\wsl_update_x64.msi"
 }

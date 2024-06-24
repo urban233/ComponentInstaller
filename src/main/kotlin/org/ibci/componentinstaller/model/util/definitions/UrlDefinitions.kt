@@ -25,4 +25,8 @@ object UrlDefinitions {
      * Url for the version history JSON file for the PySSA rich client
      */
     const val PYSSA_RICH_CLIENT_VERSION_HISTORY: String = "https://w-hs.sciebo.de/s/NvCgxsRyALYJSmJ/download"
+    /**
+     * Url for the manual wsl msi installer
+     */
+    const val WSL_MANUAL_MSI_INSTALLER: String = "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi"
 }

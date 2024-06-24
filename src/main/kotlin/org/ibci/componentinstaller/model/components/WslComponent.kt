@@ -3,11 +3,14 @@ package org.ibci.componentinstaller.model.components
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Path
 import kotlinx.coroutines.delay
 import org.ibci.componentinstaller.gui.ComponentState
 import org.ibci.componentinstaller.model.util.CustomProcessBuilder
+import org.ibci.componentinstaller.model.util.Io
 import org.ibci.componentinstaller.model.util.definitions.ComponentDefinitions
 import org.ibci.componentinstaller.model.util.definitions.PathDefinitions
+import org.ibci.componentinstaller.model.util.definitions.UrlDefinitions
 import org.ibci.componentinstaller.util.OperationTypeDefinitions
 import org.ibci.componentinstaller.util.RequestData
 import org.ibci.componentinstaller.util.Utils
@@ -73,6 +76,9 @@ class WslComponent : IComponent {
                 return false
             }
             communicator.startWindowsWrapper(true)
+            delay(1500)
+            val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
+            tmpCustomProcessBuilder.openCommand(arrayOf(""), anExecutable = PathDefinitions.WINDOW_HIDE_EXE)
             delay(3000)
             val tmpData = RequestData(
                 OperationTypeDefinitions.RUN_CMD_COMMAND,
@@ -87,7 +93,9 @@ class WslComponent : IComponent {
             if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
                 fileLogger.append(LogLevel.ERROR, "Installing WSL2 without any distro with the Windows wrapper failed!")
                 stopCommunicator()
-                return false
+                if (!alternativeInstall()) {
+                    return false
+                }
             } else {
                 fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
             }
@@ -97,6 +105,41 @@ class WslComponent : IComponent {
             return false
         }
         stopCommunicator()
+        return true
+    }
+
+    /**
+     * An alternative installation way of WSL2
+     *
+     */
+    fun alternativeInstall() : Boolean {
+        try {
+            val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
+            if (File(PathDefinitions.WSL_MANUAL_INSTALLER_MSI).exists()) {
+                // System after reboot
+                tmpCustomProcessBuilder.runCommand(
+                    anExecutable = PathDefinitions.CMD_ELEVATOR_EXE,
+                    aCommand = arrayOf("cmd.exe", "/C", PathDefinitions.WSL_MANUAL_INSTALLER_MSI)
+                )
+                tmpCustomProcessBuilder.openCommand(arrayOf(""), anExecutable = PathDefinitions.WINDOW_HIDE_EXE)
+                File(PathDefinitions.WSL_MANUAL_INSTALLER_MSI).delete()
+            } else {
+                // Download msi installer and enable features first, then restart
+                Io.downloadFile(UrlDefinitions.WSL_MANUAL_MSI_INSTALLER, PathDefinitions.WSL_MANUAL_INSTALLER_MSI)
+                tmpCustomProcessBuilder.runCommand(
+                    anExecutable = PathDefinitions.CMD_ELEVATOR_EXE,
+                    aCommand = arrayOf("cmd.exe", "/C", "dism.exe", "/Online /Enable-Feature /FeatureName:VirtualMachinePlatform /NoRestart")
+                )
+                tmpCustomProcessBuilder.openCommand(arrayOf(""), anExecutable = PathDefinitions.WINDOW_HIDE_EXE)
+                tmpCustomProcessBuilder.runCommand(
+                    anExecutable = PathDefinitions.CMD_ELEVATOR_EXE,
+                    aCommand = arrayOf("cmd.exe", "/C", "dism.exe", "/Online /Enable-Feature /FeatureName:Microsoft-Windows-Subsystem-Linux /Restart")
+                )
+                tmpCustomProcessBuilder.openCommand(arrayOf(""), anExecutable = PathDefinitions.WINDOW_HIDE_EXE)
+            }
+        } catch (ex: Exception) {
+            return false
+        }
         return true
     }
 
@@ -163,7 +206,9 @@ class WslComponent : IComponent {
      * @return True if component is installed, false: Otherwise
      */
     override fun isInstalled(): Boolean {
-        communicator.startWindowsWrapper(true);
+        val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
+        tmpCustomProcessBuilder.openCommand(arrayOf(""), anExecutable = PathDefinitions.WINDOW_HIDE_EXE)
+        communicator.startWindowsWrapper(true)
         val tmpData = RequestData(
             OperationTypeDefinitions.CHECK_WSL_INSTALLATION,
             arrayOf("Check WSL installation.")
@@ -182,6 +227,9 @@ class WslComponent : IComponent {
             fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
             if (communicator.lastReply == "Is installed.") {
                 stopCommunicator()
+                if (File(PathDefinitions.WSL_MANUAL_INSTALLER_MSI).exists()) {
+                    return false
+                }
                 return true
             } else {
                 stopCommunicator()
