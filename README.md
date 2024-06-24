@@ -49,28 +49,6 @@ tasks for building the application, building the C# WindowsWrapper projects
 and create deployable inno setups.
 
 ## Dependencies
-* Windows Subsystem for Linux 2
-    * WSL2
-    * License: Microsoft Software License Terms
-* Colabfold
-    * [LocalColabfold](https://github.com/YoshitakaMo/localcolabfold)
-    * License: MIT License
-* [Mamba](https://github.com/mamba-org/mamba)
-    * License: BSD 3-Clause "New" or "Revised" License
-* [PyQt5](https://riverbankcomputing.com/software/pyqt/intro)
-    * License: GNU General Public License (GPL)
-* [NumPy](https://numpy.org/)
-    * License: BSD 3-Clause "New" or "Revised" License
-* [Pandas](https://github.com/pandas-dev/pandas)
-    * License: BSD 3-Clause "New" or "Revised" License
-* [Matplotlib](https://matplotlib.org/)
-    * License: Python Software Foundation License (PSF)
-* [Biopython](https://biopython.org/)
-    * License: BSD 3-Clause License
-* [PyMOL Open-Source](https://github.com/schrodinger/pymol-open-source)
-    * License: [BSD-like license](https://github.com/schrodinger/pymol-open-source/blob/master/LICENSE)
-* SQLite3
-    * License: [Public Domain](https://www.sqlite.org/copyright.html)
 
 **ComponentInstaller was developed at:**
 <br>
