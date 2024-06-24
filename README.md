@@ -50,13 +50,14 @@ and create deployable inno setups.
 
 ## Dependencies
 
+**The ComponentInstaller project team would like to thank
+the communities behind the open software libraries for their amazing work.**
+
+<!--
 **ComponentInstaller was developed at:**
 <br>
 <br>Zielesny Research Group
 <br>Westphalian University of Applied Sciences
 <br>August-Schmidt-Ring 10
 <br>D-45665 Recklinghausen Germany
-
-**The ComponentInstaller project team would like to thank
-the communities behind the open software libraries for their amazing work.**
-
+--!>
