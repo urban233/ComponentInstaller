@@ -4,7 +4,7 @@
 [Setup]
 WizardImageFile=compiler:WizClassicImage.bmp
 AppName=PySSA-Installer
-AppVersion=0.1.1
+AppVersion=0.1.2
 AppCopyright=Martin Urban, Hannah Kullik, IBCI
 AppId={{192F52C3-D86D-4735-9929-C7DF599CB534}
 DefaultDirName={commonappdata}\IBCI\PySSA-Installer

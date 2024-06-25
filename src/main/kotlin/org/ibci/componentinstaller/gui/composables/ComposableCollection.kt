@@ -231,7 +231,7 @@ object ComposableCollection {
             DialogComposable.CustomDialog(
                 onCloseRequest = { aComponent.states.dialogsState.installFailed.value = false },
                 title = "Installation",
-                content = "Installation of ${aComponent.name} failed! Please try again."
+                content = "Installation of ${aComponent.name} failed! Please try again or restart and then try again."
             )
         }
         //</editor-fold>

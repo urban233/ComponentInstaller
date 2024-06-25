@@ -17,10 +17,13 @@ import org.ibci.componentinstaller.util.Utils
 import org.ibci.componentinstaller.util.logger.FileLogger
 import org.ibci.componentinstaller.util.logger.LogLevel
 import org.ibci.extension.communication.Communicator
+import org.jetbrains.skia.TextBlob
 
 import java.io.File
+import java.io.FileNotFoundException
 import java.net.InetAddress
 import java.nio.file.AccessDeniedException
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Paths
 import java.util.zip.ZipFile
 
@@ -85,52 +88,55 @@ class PyssaComponent: IComponent {
      */
     override suspend fun install(): Boolean {
         // First installer prototype has only an online version, therefore no offline package is needed but an internet connection!
+        var tmpOperationState = false
         try {
             communicator.startWindowsWrapper(false)
             delay(3000)
+            //<editor-fold desc="Check if program dir is empty">
+            if (File(PathDefinitions.PYSSA_PROGRAM_DIR).exists()) {
+                File(PathDefinitions.PYSSA_PROGRAM_DIR).deleteRecursively()
+                if (File(PathDefinitions.PYSSA_PROGRAM_DIR).exists()) {
+                    // Check if the program dir was successfully deleted.
+                    // This might not everytime be the case, if any process within these dirs are still running, during deletion.
+                    throw FileAlreadyExistsException("PySSA program dir is not empty before installation!")
+                }
+            }
+            //</editor-fold>
             val tmpWindowsPackage: File = File(PathDefinitions.PYSSA_INSTALLER_WINDOWS_PACKAGE_ZIP)
             // First check if anything is stored offline
             if (tmpWindowsPackage.exists()) {
                 if (!copyWindowsPackage()) {
-                    stopCommunicator() // TODO: This is bad and needs to be fixed in the future!
-                    return false
+                    throw RuntimeException("Copying windows package failed!")
                 }
             } else {
                 // No offline files found & try to download
                 if (Utils.isInternetAvailable()) {
                     if (!downloadWindowsPackage()) {
-                        stopCommunicator()
-                        return false
+                        throw FileNotFoundException("Windows package zip archive not found after download!")
                     }
                 } else {
-                    stopCommunicator()
-                    return false
+                    throw FileNotFoundException("Windows package zip archive not found and no internet is available to download!")
                 }
             }
             if (!unzipWindowsPackage()) {
-                stopCommunicator()
-                return false
+                throw RuntimeException("Unzip windows package failed!")
             }
             if (!createWindowsShortcuts()) {
-                stopCommunicator()
-                return false
+                throw RuntimeException("Create desktop and start menu shortcuts failed!")
             }
             if (!setupPythonEnvironment()) {
-                stopCommunicator()
-                return false
+                throw RuntimeException("Setup python environment failed!")
             }
             if (!postInstallCleanup()) {
-                stopCommunicator()
-                return false
+                throw RuntimeException("Post install cleanup failed!")
             }
-            return true
+            tmpOperationState = true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")
-            stopCommunicator()
-            return false
         } finally {
             stopCommunicator()
         }
+        return tmpOperationState
     }
 
     /**
@@ -209,7 +215,7 @@ class PyssaComponent: IComponent {
      *
      * @return True if operation is successful, false: Otherwise
      */
-    private suspend fun unzipWindowsPackage(): Boolean {
+    private fun unzipWindowsPackage(): Boolean {
         val tmpZipFilePath: File = File(PathDefinitions.PYSSA_INSTALLER_WINDOWS_PACKAGE_ZIP)
         val tmpExtractPath: File = File(PathDefinitions.PYSSA_PROGRAM_DIR)
 
@@ -228,9 +234,12 @@ class PyssaComponent: IComponent {
             fileLogger.append(LogLevel.INFO, "Sending request to: Unzip windows_package.zip ...")
             if (!communicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
                 fileLogger.append(LogLevel.ERROR, "Unzip of windows_package.zip with the Windows wrapper failed!")
-                return false
+                throw RuntimeException("Unzip of windows_package.zip with the Windows wrapper failed!")
             } else {
                 fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
+                if (communicator.lastReply == "Unzip process failed") {
+                    throw RuntimeException("Unzip process failed")
+                }
             }
             return true
         } catch (ex: Exception) {
@@ -244,7 +253,7 @@ class PyssaComponent: IComponent {
      *
      * @return True if operation is successful, false: Otherwise
      */
-    private suspend fun createWindowsShortcuts(): Boolean {
+    private fun createWindowsShortcuts(): Boolean {
         try {
             val tmpData = RequestData(
                 OperationTypeDefinitions.CREATE_SHORTCUTS,
@@ -378,26 +387,28 @@ class PyssaComponent: IComponent {
      * @return True if component is successfully uninstalled, false: Otherwise
      */
     override suspend fun uninstall(): Boolean {
+        var tmpOperationState: Boolean = false
         try {
             communicator.startWindowsWrapper(false)
             delay(3000)
             removeShortcuts()
             File(PathDefinitions.PYSSA_PROGRAM_DIR).deleteRecursively()
+            if (!File(PathDefinitions.PYSSA_PROGRAM_DIR).exists()) {
+                // Checks if the uninstallation was successful by checking the program dir of PySSA
+                tmpOperationState = true
+            }
         } catch (ex: AccessDeniedException) {
             fileLogger.append(LogLevel.ERROR, "There is a filesystem access violation. See this: $ex")
-            stopCommunicator()
-            return false
         } catch (ex: Exception) {
             // Error occurred during one of the function calls, therefore return false
             fileLogger.append(LogLevel.ERROR, "$ex")
+        } finally {
             stopCommunicator()
-            return false
         }
-        stopCommunicator()
-        return true
+        return tmpOperationState
     }
 
-    private suspend fun removeShortcuts() : Boolean {
+    private fun removeShortcuts() : Boolean {
         try {
             val tmpData = RequestData(OperationTypeDefinitions.REMOVE_SHORTCUTS, arrayOf("PySSA"))
             if (!tmpData.writeToJsonFile()) {
@@ -453,6 +464,7 @@ class PyssaComponent: IComponent {
             if (checkPrerequisitesForInstallation(aSystemState)) {
                 install()
             }
+            hasUpdate()
             return true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")
