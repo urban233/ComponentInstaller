@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "org.ibci"
-version = "0.1.2"
+version = "0.1.3"
 
 repositories {
     mavenCentral()
@@ -89,6 +89,8 @@ tasks.register<DefaultTask>("appendVersion") {
  * Substitutes the version number placeholder in the inno setup script with the latest one
  */
 tasks.register("updateVersionInInnoSetupScriptOnline") {
+    dependsOn("appendVersion")
+    mustRunAfter("appendVersion")
     doLast {
         val template = file("$projectDir/deployment/inno_setup/base.iss").readText()
         val processedScript = template.replace("{#AppVersion}", version.toString())
@@ -100,6 +102,8 @@ tasks.register("updateVersionInInnoSetupScriptOnline") {
  * Substitutes the version number placeholder in the inno setup script with the latest one
  */
 tasks.register("updateVersionInInnoSetupScriptOffline") {
+    dependsOn("appendVersion")
+    mustRunAfter("appendVersion")
     doLast {
         val template = file("$projectDir/deployment/inno_setup/baseOffline.iss").readText()
         val processedScript = template.replace("{#AppVersion}", version.toString())
@@ -108,13 +112,13 @@ tasks.register("updateVersionInInnoSetupScriptOffline") {
 }
 
 tasks.register<Exec>("prepareInnoSetupScriptOnline") {
-    mustRunAfter("createDistributable", "publishWindowsCmdElevator")
+    mustRunAfter("updateVersionInInnoSetupScriptOnline", "createDistributable", "publishWindowsCmdElevator")
     val copyScript = file("$projectDir/deployment/inno_setup/copy_inno_src.bat")
     commandLine("cmd", "/c", copyScript)
 }
 
 tasks.register<Exec>("prepareInnoSetupScriptOffline") {
-    mustRunAfter("createDistributable", "publishWindowsCmdElevator")
+    mustRunAfter("updateVersionInInnoSetupScriptOffline", "createDistributable", "publishWindowsCmdElevator")
     val copyScript = file("$projectDir/deployment/inno_setup/copy_inno_src_offline.bat")
     commandLine("cmd", "/c", copyScript)
 }
