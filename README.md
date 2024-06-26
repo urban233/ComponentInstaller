@@ -1,12 +1,9 @@
-# Component Installer (PySSA-Installer)
-<!-- [![DOI](https://zenodo.org/badge/220207097.svg)](https://zenodo.org/badge/latestdoi/220207097) -->
+# Component Installer for deploying PySSA
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-blue.svg)](https://GitHub.com/urban233/ComponentInstaller/graphs/commit-activity)
 [![GitHub issues](https://img.shields.io/github/issues/zielesny/PySSA)](https://GitHub.com/urban233/ComponentInstaller/issues/)
 [![GitHub contributors](https://img.shields.io/github/contributors/urban233/ComponentInstaller.svg)](https://GitHub.com/zielesny/PySSA/graphs/contributors/)
 [![GitHub release](https://img.shields.io/github/release/urban233/PySSA.svg)](https://github.com/urban233/PySSA/releases/)
-
-# Component Installer for deploying PySSA
 
 ## Contents of this document
 * [Description](#Description)
@@ -52,36 +49,15 @@ tasks for building the application, building the C# WindowsWrapper projects
 and create deployable inno setups.
 
 ## Dependencies
-* Windows Subsystem for Linux 2
-    * WSL2
-    * License: Microsoft Software License Terms
-* Colabfold
-    * [LocalColabfold](https://github.com/YoshitakaMo/localcolabfold)
-    * License: MIT License
-* [Mamba](https://github.com/mamba-org/mamba)
-    * License: BSD 3-Clause "New" or "Revised" License
-* [PyQt5](https://riverbankcomputing.com/software/pyqt/intro)
-    * License: GNU General Public License (GPL)
-* [NumPy](https://numpy.org/)
-    * License: BSD 3-Clause "New" or "Revised" License
-* [Pandas](https://github.com/pandas-dev/pandas)
-    * License: BSD 3-Clause "New" or "Revised" License
-* [Matplotlib](https://matplotlib.org/)
-    * License: Python Software Foundation License (PSF)
-* [Biopython](https://biopython.org/)
-    * License: BSD 3-Clause License
-* [PyMOL Open-Source](https://github.com/schrodinger/pymol-open-source)
-    * License: [BSD-like license](https://github.com/schrodinger/pymol-open-source/blob/master/LICENSE)
-* SQLite3
-    * License: [Public Domain](https://www.sqlite.org/copyright.html)
 
+**The ComponentInstaller project team would like to thank
+the communities behind the open software libraries for their amazing work.**
+
+<!--
 **ComponentInstaller was developed at:**
 <br>
 <br>Zielesny Research Group
 <br>Westphalian University of Applied Sciences
 <br>August-Schmidt-Ring 10
 <br>D-45665 Recklinghausen Germany
-
-**The ComponentInstaller project team would like to thank
-the communities behind the open software libraries for their amazing work.**
-
+--!>
