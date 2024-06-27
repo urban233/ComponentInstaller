@@ -464,7 +464,7 @@ class PyssaComponent: IComponent {
             if (checkPrerequisitesForInstallation(aSystemState)) {
                 install()
             }
-            hasUpdate()
+            states.isUpdatable.value = hasUpdate()
             return true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")
