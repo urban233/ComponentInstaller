@@ -11,7 +11,7 @@
     * [Sources](#Sources)
     * [Documentation](#Documentation)
     * [Assets](#Assets)
-* [Installation](#Installation)
+* [Build](#Build)
     * [Windows](#Windows)
     * [Source code](#Source-code)
 * [Dependencies](#Dependencies)
