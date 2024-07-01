@@ -41,7 +41,7 @@ The repository comprises four distinct source code units.
     - The package contains the communicator, which facilitates communication with the Kotlin application, as well as a number of useful classes for the management of the MS Windows operating system.
 
 ### Documentation
-The <a href="https://github.com/urban233/ComponentInstaller/tree/deployment">"deployment"</a> folder 
+The <a href="https://github.com/urban233/ComponentInstaller/tree/main/deployment">"deployment"</a> folder 
 contains a user guide as PDF file.
 This PDF file is also available through the help menu item within the PySSA Component Installer. 
 The user guide explains the installation and uninstallation of every component 
