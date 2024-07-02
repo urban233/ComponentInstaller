@@ -196,7 +196,7 @@ object ComposableCollection {
         if (aComponent.states.dialogsState.confirmInstall.value == true && aComponent.name == ComponentDefinitions.COMPONENT_NAME_WSL2) {
             DialogComposable.ConfirmationDialog(
                 "Install Component WSL2",
-                "Are you sure you want to install WSL2?\nIMPORTANT: The WSL2 will integrate into the Windows OS and be a system component that" +
+                "Are you sure you want to install WSL2?\nIMPORTANT: The WSL2 will integrate into the Windows OS and be a system component that " +
                         "cannot be uninstalled!",
                 onConfirm = {
                     aComponent.states.componentJob.value.cancel()
@@ -222,7 +222,7 @@ object ComposableCollection {
                 },
                 onDismiss = {
                     moreOptionsExpanded.value = false
-                    aComponent.states.dialogsState.confirmUninstall.value = false
+                    aComponent.states.dialogsState.confirmInstall.value = false
                 }
             )
         }
