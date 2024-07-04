@@ -85,3 +85,5 @@ deployment/inno_setup/src/*
 ### External resources ###
 deployment/offline_resources/windows_package.zip
 deployment/offline_resources/alma-colabfold-9-rootfs.tar
+deployment/wix
+deployment/wix/*

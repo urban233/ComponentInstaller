@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "org.ibci"
-version = "0.1.4"
+version = "1.0.0"
 
 repositories {
     mavenCentral()

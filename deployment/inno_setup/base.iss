@@ -10,18 +10,18 @@ AppId={{192F52C3-D86D-4735-9929-C7DF599CB534}
 DefaultDirName={commonappdata}\IBCI\PySSA-Installer
 AppPublisher=IBCI
 VersionInfoProductName=PySSA-Component-Installer
-VersionInfoProductVersion=0.1.0
-MinVersion=0,6.2
+MinVersion=10.0.19045
 OutputDir=out
-OutputBaseFilename=pyssa_installer_setup
-VersionInfoCopyright=GNU GPL v3
+OutputBaseFilename=only_pyssa_installer_{#AppVersion}_setup
+VersionInfoCopyright=GNU GPL-3.0
 DisableDirPage=True
 DisableProgramGroupPage=True
+DisableReadyPage=True
 ArchitecturesInstallIn64BitMode=x64
 WizardStyle=modern
-DisableReadyPage=True
 UninstallDisplayName=PySSA Component Installer
 UninstallDisplayIcon={app}\assets\icon.ico
+LicenseFile=LICENSE.txt
 
 [Dirs]
 Name: "{commonappdata}\IBCI"
@@ -36,9 +36,12 @@ Source: "src\scripts\*"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\scripts"
 Source: "src\tools\*"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\tools"; Flags: ignoreversion recursesubdirs createallsubdirs;
 Source: "src\assets\icon.ico"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\assets"; Flags: ignoreversion recursesubdirs createallsubdirs;
 Source: "src\version_history.json"; DestDir: "{commonappdata}\IBCI\PySSA-Installer"; Flags: ignoreversion recursesubdirs createallsubdirs;
-Source: "src\PySSAComponentInstaller-UserGuide.pdf"; DestDir: "{commonappdata}\IBCI\PySSA-Installer"; Flags: ignoreversion recursesubdirs createallsubdirs;
+Source: "src\PySSA-Component-Installer-User-Guide.pdf"; DestDir: "{commonappdata}\IBCI\PySSA-Installer"; Flags: ignoreversion recursesubdirs createallsubdirs;
 ;Source: "src\offline_resources\windows_package.zip"; DestDir: "{commonappdata}\IBCI\PySSA-Installer\temp"; Flags: ignoreversion recursesubdirs createallsubdirs;
 
 [Icons]
 Name: "{commondesktop}\PySSA-Installer"; Filename: "{commonappdata}\IBCI\PySSA-Installer\bin\ComponentInstaller.exe"; IconFilename: "{commonappdata}\IBCI\PySSA-Installer\assets\icon.ico"
 Name: "{commonstartmenu}\PySSA-Installer"; Filename: "{commonappdata}\IBCI\PySSA-Installer\bin\ComponentInstaller.exe"; IconFilename: "{commonappdata}\IBCI\PySSA-Installer\assets\icon.ico"
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{commonappdata}\IBCI"

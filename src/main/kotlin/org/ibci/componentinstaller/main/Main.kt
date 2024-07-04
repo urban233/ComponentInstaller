@@ -95,7 +95,7 @@ fun launchGui(aWindowTitle: String) = application {
 fun promptAndUpdate() : Boolean {
     val response = JOptionPane.showConfirmDialog(null, "An update is available. Do you want to update now? (Please wait for further instructions.)", "Update Available", JOptionPane.YES_NO_OPTION)
     if (response == JOptionPane.YES_OPTION) {
-        val tmpSetupFile: File = File("${Paths.get(System.getProperty("user.home"), "Downloads").toRealPath()}\\pyssa_installer_setup.exe")
+        val tmpSetupFile: File = File("${Paths.get(System.getProperty("user.home"), "Downloads").toRealPath()}\\update_pyssa_installer_setup.exe")
         if(Io.downloadFile(UrlDefinitions.PYSSA_INSTALLER_SETUP_EXE, tmpSetupFile.absolutePath)) {
             JOptionPane.showMessageDialog(null, "Download of update finished.", "Update Downloaded", JOptionPane.INFORMATION_MESSAGE, UIManager.getIcon("OptionPane.informationIcon"))
             Runtime.getRuntime().exec(tmpSetupFile.absolutePath)

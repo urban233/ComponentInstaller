@@ -14,6 +14,6 @@ xcopy /y "%projectDirPath%\WindowsWrapper\WindowsCmdElevator\bin\Release\net8.0\
 xcopy /y "%projectDirPath%\WindowsWrapper\WindowsTasks\bin\Release\net8.0\publish\win-x64\WindowsTasks.exe" "%baseDestinationDir%\tools\"
 xcopy /y "%projectDirPath%\src\main\resources\assets\icon.ico" "%baseDestinationDir%\assets\"
 xcopy /y "%projectDirPath%\src\main\resources\version_history.json" "%baseDestinationDir%\"
-xcopy /y "%projectDirPath%\deployment\inno_setup\PySSAComponentInstaller-UserGuide.pdf" "%baseDestinationDir%\"
+xcopy /y "%projectDirPath%\deployment\inno_setup\PySSA-Component-Installer-User-Guide.pdf" "%baseDestinationDir%\"
 
 endlocal

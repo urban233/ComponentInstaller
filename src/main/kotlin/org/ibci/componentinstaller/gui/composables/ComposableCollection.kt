@@ -223,6 +223,7 @@ object ComposableCollection {
                 onDismiss = {
                     moreOptionsExpanded.value = false
                     aComponent.states.dialogsState.confirmInstall.value = false
+                    anIsJobRunningState.value = false
                 }
             )
         }
@@ -437,25 +438,25 @@ object ComposableCollection {
                     )
                     Spacer(modifier = Modifier.weight(1f)) // Spacer to push button to the right
                     // Cancel button
-                    TextButton(onClick = {
-                        aComponent.states.componentJob.value.cancel()
-                        aComponent.states.componentJob.value = Job()
-                        aComponent.states.isComponentJobRunning.value = false
-                    },
-                        enabled = aComponent.states.componentJob.value.isActive == true,
-                        modifier = Modifier
-                            .width(100.dp)
-                            .height(24.dp)
-                            .fillMaxWidth()
-                            .pointerHoverIcon(PointerIcon.Hand),
-                        contentPadding = PaddingValues(0.dp),
-                    ) {
-                        LowLevelComposable.textForButton(
-                            aText = "Cancel",
-                            aColor = GuiDefinitions.PYSSA_BLUE_COLOR,
-                            aFontWeight = FontWeight.SemiBold
-                        )
-                    }
+//                    TextButton(onClick = {
+//                        aComponent.states.componentJob.value.cancel()
+//                        aComponent.states.componentJob.value = Job()
+//                        aComponent.states.isComponentJobRunning.value = false
+//                    },
+//                        enabled = aComponent.states.componentJob.value.isActive == true,
+//                        modifier = Modifier
+//                            .width(100.dp)
+//                            .height(24.dp)
+//                            .fillMaxWidth()
+//                            .pointerHoverIcon(PointerIcon.Hand),
+//                        contentPadding = PaddingValues(0.dp),
+//                    ) {
+//                        LowLevelComposable.textForButton(
+//                            aText = "Cancel",
+//                            aColor = GuiDefinitions.PYSSA_BLUE_COLOR,
+//                            aFontWeight = FontWeight.SemiBold
+//                        )
+//                    }
                 }
                 // Progress bar
                 LinearProgressIndicator(

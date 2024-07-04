@@ -181,7 +181,7 @@ fun appMenu(moreOptionsExpanded: MutableState<Boolean>) {
         )
         LowLevelComposable.standardDropdownMenuItem(
             onClickFunction = {
-                ComposableCollection.openFileWithDefaultApp("C:\\ProgramData\\IBCI\\PySSA-Installer\\PySSAComponentInstaller-UserGuide.pdf")
+                ComposableCollection.openFileWithDefaultApp("C:\\ProgramData\\IBCI\\PySSA-Installer\\PySSA-Component-Installer-User-Guide.pdf")
                 moreOptionsExpanded.value = false},
             aText = "Help"
         )
