@@ -3,7 +3,7 @@
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-blue.svg)](https://GitHub.com/urban233/ComponentInstaller/graphs/commit-activity)
 [![GitHub issues](https://img.shields.io/github/issues/urban233/ComponentInstaller)](https://GitHub.com/urban233/ComponentInstaller/issues/)
 [![GitHub contributors](https://img.shields.io/github/contributors/urban233/ComponentInstaller.svg)](https://GitHub.com/urban233/ComponentInstaller/graphs/contributors/)
-[![GitHub release](https://img.shields.io/github/release/urban233/PySSA.svg)](https://github.com/urban233/ComponentInstaller/releases/)
+[![GitHub release](https://img.shields.io/github/v/release/urban233/ComponentInstaller)](https://github.com/urban233/ComponentInstaller/releases/)
 
 ## Contents of this document
 * [Description](#Description)
@@ -43,7 +43,7 @@ The repository comprises four distinct source code units.
 ### Documentation
 The <a href="https://github.com/urban233/ComponentInstaller/tree/main/deployment">"deployment"</a> folder 
 contains a user guide as PDF file.
-This PDF file is also available through the help menu item within the PySSA Component Installer. 
+This [PDF file](https://github.com/urban233/ComponentInstaller/blob/v1.0.1/deployment/inno_setup/PySSA-Component-Installer-User-Guide.pdf) is also available through the help menu item within the PySSA Component Installer. 
 The user guide explains the installation and uninstallation of every component 
 as well as the update procedure for ColabFold and PySSA. Furthermore,
 it contains a troubleshooting section for WSL2 and ColabFold.
