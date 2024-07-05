@@ -78,7 +78,7 @@ class WslComponent : IComponent {
             communicator.startWindowsWrapper(true)
             delay(1500)
             val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
-            tmpCustomProcessBuilder.openCommand(arrayOf(""), anExecutable = PathDefinitions.WINDOW_HIDE_EXE)
+            //tmpCustomProcessBuilder.openCommand(arrayOf(""), anExecutable = PathDefinitions.WINDOW_HIDE_EXE)
             delay(3000)
             val tmpData = RequestData(
                 OperationTypeDefinitions.RUN_CMD_COMMAND,
@@ -121,7 +121,7 @@ class WslComponent : IComponent {
                     anExecutable = PathDefinitions.CMD_ELEVATOR_EXE,
                     aCommand = arrayOf("cmd.exe", "/C", PathDefinitions.WSL_MANUAL_INSTALLER_MSI)
                 )
-                tmpCustomProcessBuilder.openCommand(arrayOf(""), anExecutable = PathDefinitions.WINDOW_HIDE_EXE)
+                //tmpCustomProcessBuilder.openCommand(arrayOf(""), anExecutable = PathDefinitions.WINDOW_HIDE_EXE)
                 File(PathDefinitions.WSL_MANUAL_INSTALLER_MSI).delete()
             } else {
                 // Download msi installer and enable features first, then restart
@@ -130,12 +130,12 @@ class WslComponent : IComponent {
                     anExecutable = PathDefinitions.CMD_ELEVATOR_EXE,
                     aCommand = arrayOf("cmd.exe", "/C", "dism.exe", "/Online /Enable-Feature /FeatureName:VirtualMachinePlatform /NoRestart")
                 )
-                tmpCustomProcessBuilder.openCommand(arrayOf(""), anExecutable = PathDefinitions.WINDOW_HIDE_EXE)
+                //tmpCustomProcessBuilder.openCommand(arrayOf(""), anExecutable = PathDefinitions.WINDOW_HIDE_EXE)
                 tmpCustomProcessBuilder.runCommand(
                     anExecutable = PathDefinitions.CMD_ELEVATOR_EXE,
                     aCommand = arrayOf("cmd.exe", "/C", "dism.exe", "/Online /Enable-Feature /FeatureName:Microsoft-Windows-Subsystem-Linux /Restart")
                 )
-                tmpCustomProcessBuilder.openCommand(arrayOf(""), anExecutable = PathDefinitions.WINDOW_HIDE_EXE)
+                //tmpCustomProcessBuilder.openCommand(arrayOf(""), anExecutable = PathDefinitions.WINDOW_HIDE_EXE)
             }
         } catch (ex: Exception) {
             return false
@@ -207,7 +207,7 @@ class WslComponent : IComponent {
      */
     override fun isInstalled(): Boolean {
         val tmpCustomProcessBuilder: CustomProcessBuilder = CustomProcessBuilder()
-        tmpCustomProcessBuilder.openCommand(arrayOf(""), anExecutable = PathDefinitions.WINDOW_HIDE_EXE)
+        //tmpCustomProcessBuilder.openCommand(arrayOf(""), anExecutable = PathDefinitions.WINDOW_HIDE_EXE)
         communicator.startWindowsWrapper(true)
         val tmpData = RequestData(
             OperationTypeDefinitions.CHECK_WSL_INSTALLATION,

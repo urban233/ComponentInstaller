@@ -46,6 +46,31 @@ public class CmdElevator
     }
 
     /// <summary>
+    /// Restarts the WindowsTasks.exe with elevated (administrator) privileges.
+    /// </summary>
+    public static void RestartElevatedWindowsTasks()
+    {
+        ProcessStartInfo startInfo = new ProcessStartInfo
+        {
+            FileName = @"C:\ProgramData\IBCI\PySSA-Installer\tools\WindowsTasks.exe", // or "powershell.exe" if you want to start PowerShell
+            Verb = "runas",
+            UseShellExecute = true,
+            WindowStyle = ProcessWindowStyle.Hidden, // This will hide the window
+            CreateNoWindow = true // This ensures no window is created
+        };
+
+        try
+        {
+            Process process = Process.Start(startInfo);
+            process.WaitForExit();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("The process could not be started: " + ex.Message);
+        }
+    }
+
+    /// <summary>
     /// Runs a command in the command prompt (cmd) and displays the output.
     /// </summary>
     /// <param name="args">The command-line arguments representing the command to run.</param>

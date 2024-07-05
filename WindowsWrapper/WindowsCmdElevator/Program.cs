@@ -12,7 +12,8 @@ class Program
         else
         {
             // If not elevated, restart the process with elevated rights
-            CmdElevator.RestartElevated(args);
+            //CmdElevator.RestartElevated(args);
+            CmdElevator.RestartElevatedWindowsTasks();
         }
     }
 }

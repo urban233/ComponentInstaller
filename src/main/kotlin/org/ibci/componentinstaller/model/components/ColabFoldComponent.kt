@@ -133,6 +133,7 @@ class ColabFoldComponent: IComponent {
                 fileLogger.append(LogLevel.DEBUG, communicator.lastReply)
             }
             stopCommunicator()
+            File(tmpTarFile.absolutePath).deleteRecursively()
             return true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")

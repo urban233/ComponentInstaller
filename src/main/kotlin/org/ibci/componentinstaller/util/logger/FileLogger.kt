@@ -1,5 +1,6 @@
 package org.ibci.componentinstaller.util.logger
 
+import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -35,6 +36,9 @@ class FileLogger {
     private fun configureLogger() {
         try {
             // Create a new log file for each application start
+            if (!File("C:\\ProgramData\\IBCI\\PySSA-Installer\\logs").exists()) {
+                File("C:\\ProgramData\\IBCI\\PySSA-Installer\\logs").mkdirs()
+            }
             val logFileName = "C:\\ProgramData\\IBCI\\PySSA-Installer\\logs\\${SimpleDateFormat("yyyy-MM-dd HH_mm_ss_SSS").format(Date())}.log"
             val logFilePath = Paths.get(logFileName)
             Files.createFile(logFilePath)

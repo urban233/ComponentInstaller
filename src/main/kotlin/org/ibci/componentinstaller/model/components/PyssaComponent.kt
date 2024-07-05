@@ -90,7 +90,7 @@ class PyssaComponent: IComponent {
         // First installer prototype has only an online version, therefore no offline package is needed but an internet connection!
         var tmpOperationState = false
         try {
-            communicator.startWindowsWrapper(false)
+            communicator.startWindowsWrapper(true)
             delay(3000)
             //<editor-fold desc="Check if program dir is empty">
             if (File(PathDefinitions.PYSSA_PROGRAM_DIR).exists()) {
@@ -104,12 +104,8 @@ class PyssaComponent: IComponent {
             //</editor-fold>
             val tmpWindowsPackage: File = File(PathDefinitions.PYSSA_INSTALLER_WINDOWS_PACKAGE_ZIP)
             // First check if anything is stored offline
-            if (tmpWindowsPackage.exists()) {
-                if (!copyWindowsPackage()) {
-                    throw RuntimeException("Copying windows package failed!")
-                }
-            } else {
-                // No offline files found & try to download
+            if (!tmpWindowsPackage.exists()) {
+                // No offline files found & try to download if internet is available
                 if (Utils.isInternetAvailable()) {
                     if (!downloadWindowsPackage()) {
                         throw FileNotFoundException("Windows package zip archive not found after download!")
@@ -323,6 +319,7 @@ class PyssaComponent: IComponent {
             if (tmpSetupPythonPath.exists()) {
                 tmpSetupPythonPath.deleteRecursively()
             }
+            File(PathDefinitions.PYSSA_INSTALLER_WINDOWS_PACKAGE_ZIP).deleteRecursively()
             return true
         } catch (ex: Exception) {
             fileLogger.append(LogLevel.ERROR, "$ex")
@@ -389,10 +386,11 @@ class PyssaComponent: IComponent {
     override suspend fun uninstall(): Boolean {
         var tmpOperationState: Boolean = false
         try {
-            communicator.startWindowsWrapper(false)
+            communicator.startWindowsWrapper(true)
             delay(3000)
             removeShortcuts()
-            File(PathDefinitions.PYSSA_PROGRAM_DIR).deleteRecursively()
+            removePyssaProgramDir(communicator)
+            //File(PathDefinitions.PYSSA_PROGRAM_DIR).deleteRecursively()
             if (!File(PathDefinitions.PYSSA_PROGRAM_DIR).exists()) {
                 // Checks if the uninstallation was successful by checking the program dir of PySSA
                 tmpOperationState = true
@@ -406,6 +404,26 @@ class PyssaComponent: IComponent {
             stopCommunicator()
         }
         return tmpOperationState
+    }
+
+    private fun removePyssaProgramDir(aCommunicator: Communicator) : Boolean {
+        val tmpData = RequestData(
+            OperationTypeDefinitions.RUN_CMD_COMMAND,
+            arrayOf("rmdir /S /Q C:\\ProgramData\\IBCI\\PySSA")
+        )
+        if (!tmpData.writeToJsonFile()) {
+            fileLogger.append(LogLevel.ERROR, "Writing data to json file failed!")
+            return false
+        }
+        fileLogger.append(LogLevel.INFO, "Sending request to: Run rmdir command in cmd ...")
+        if (!aCommunicator.sendRequest(PathDefinitions.EXCHANGE_JSON)) {
+            fileLogger.append(LogLevel.ERROR, "Running the cmd command in the Windows wrapper failed!")
+            return false
+        } else {
+            fileLogger.append(LogLevel.DEBUG, aCommunicator.lastReply)
+        }
+        fileLogger.append(LogLevel.INFO, "Removing the PySSA program dir was successful.")
+        return true
     }
 
     private fun removeShortcuts() : Boolean {
