@@ -84,22 +84,31 @@ fun MainWindow(aController: MainWindowController) {
                 }
             }
         )
-        ExpandableSection(
-            title = "Available",
-            expandedState = isAvailableExpanded,
-            addComponents = {
-                for (tmpComponent in components) {
-                    if (!tmpComponent.states.isInstalled.value) {
-                        ComposableCollection.componentItem(
-                            tmpComponent,
-                            aController,
-                            isJobRunning,
-                            systemState
-                        )
+        var tmpComponentsAreAvailable: Boolean = false
+        for (tmpComponent in components) {
+            if (!tmpComponent.states.isInstalled.value) {
+                tmpComponentsAreAvailable = true
+                break
+            }
+        }
+        if (tmpComponentsAreAvailable) {
+            ExpandableSection(
+                title = "Available",
+                expandedState = isAvailableExpanded,
+                addComponents = {
+                    for (tmpComponent in components) {
+                        if (!tmpComponent.states.isInstalled.value) {
+                            ComposableCollection.componentItem(
+                                tmpComponent,
+                                aController,
+                                isJobRunning,
+                                systemState
+                            )
+                        }
                     }
                 }
-            }
-        )
+            )
+        }
     }
 }
 
